@@ -166,7 +166,7 @@ Options on command line override those in the config file.				\n", basename(prog
 
 int main(int argc,char **argv)
 {
-	sock = socket(PF_INET, SOCK_DGRAM, 0);
+	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	int flag = 0; /* If set it means we've sent an update request
 			 packet, but not yet had a reply back. (therefore
 			 resend the request every 30s or so, instead of
