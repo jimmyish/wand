@@ -39,7 +39,7 @@ int load_module(char *filename)
 	return 1;
 }
 
-void usage(void) {
+void usage(const char *prog) {
 	printf("%s: [-d module] 		 - Transport driver to use
 							[-D]						 - Don't daemonise
 							[-f configfile]	 - Read config from this file
@@ -50,7 +50,7 @@ void usage(void) {
 							[-p pidfile] 		 - File to store pid in
 							Options on command line override those in the config
 							file.					
-							\n", argv[0]);
+							\n", prog);
 
 }
 
@@ -97,7 +97,7 @@ int main(int argc,char **argv)
 				conffile = strdup(optarg);
 				break;
 			case 'h':
-				usage();
+				usage(argv[0]);
 				return 0;
 				break;
 			case 'i':

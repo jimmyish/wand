@@ -214,7 +214,7 @@ void doPacket(char *packet,int len)
   clearOldEntries();
 }
 
-void usage(void) {
+void usage(const char *prog) {
 	printf("%s: -i server 
 					[-c controlfile] - Specify the Etud control file
 					[-D]						 - Don't daemonise
@@ -225,7 +225,7 @@ void usage(void) {
 					[-p pidfile] 		 - File to store pid in
 					Options on command line override those in the config
 					file.					
-					\n", argv[0]);
+					\n", prog);
 }
 
 int main(int argc,char **argv)
@@ -267,7 +267,7 @@ int main(int argc,char **argv)
 				strncpy(cfgfile, optarg, 1024);
 				break;
 			case 'h':
-				usage();
+				usage(argv[0]);
 				return 0;
 				break;
 			case 'i':
