@@ -73,7 +73,7 @@ case "$1" in
 	$IP addr add $IFADDR/$BITLENGTH broadcast $BROADCAST dev $INTERFACE
 	
 	echo " * Bringing the networking interface up."
-	$IP link set tap0 up
+	$IP link set $INTERFACE up
 	echo "."
 	;;
   stop)
@@ -82,7 +82,7 @@ case "$1" in
 		--exec $DAEMON
 	rm /var/run/$NAME.pid
 	rm /var/run/$NAME.ctrl
-	$IP link set tap0 down
+	$IP link set $INTERFACE down
 	echo "."
 	;;
   #reload)
@@ -110,7 +110,7 @@ case "$1" in
 		/var/run/$NAME.pid --exec $DAEMON
         rm /var/run/$NAME.pid
         rm /var/run/$NAME.ctrl
-        $IP link set tap0 down
+        $IP link set $INTERFACE down
 	
 	sleep 1
 	start-stop-daemon --start --quiet --exec $DAEMON
