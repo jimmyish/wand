@@ -1,0 +1,89 @@
+#! /bin/sh
+#
+# wand		startup script for wand
+#
+#		Written by Daniel Lawson <daniel@meta.net.nz>
+#
+# Version:	$Id$
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/sbin/wand
+NAME=wand
+DESC="Wide Area Network Daemon"
+CONF=/usr/local/etc
+
+if [ -f ${CONF}/wand.$(hostname -s).conf ]; then
+        . ${CONF}/wand.$(hostname -s).conf
+elif [ -f ${CONF}/wand.conf ]; then
+        . ${CONF}/wand.conf
+else
+        echo Could not find configuration file
+        exit
+fi
+
+test -x $DAEMON || exit 0
+
+set -e
+case "$1" in
+  start)
+	if [ "x$ETHERNET" = "x" ]; then
+        	ETHERNET=$(/sbin/ip link show eth0 | grep "link/eth" | cut -b 16-33)
+	fi
+
+	if [ "x$SERVERS" = "x" ]; then
+        	echo No listed wand servers.
+        	exit;
+	fi
+
+	echo -n "Starting $DESC: $NAME"
+	for i in $SERVERS; do 
+		echo -n " ${i}"
+		start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
+			--exec $DAEMON -- $i $ETHERNET
+	done
+	echo "."
+	;;
+  stop)
+	echo -n "Stopping $DESC: $NAME "
+	start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+		--exec $DAEMON
+	echo "."
+	;;
+  #reload)
+	#
+	#	If the daemon can reload its config files on the fly
+	#	for example by sending it SIGHUP, do it here.
+	#
+	#	If the daemon responds to changes in its config file
+	#	directly anyway, make this a do-nothing entry.
+	#
+	# echo -n "Reloading $DESC configuration..."
+	# start-stop-daemon --stop --signal 1 --quiet --pidfile \
+	#	/var/run/$NAME.pid --exec $DAEMON
+	# echo "done."
+  #;;
+  restart|force-reload)
+	#
+	#	If the "reload" option is implemented, move the "force-reload"
+	#	option to the "reload" entry above. If not, "force-reload" is
+	#	just the same as "restart".
+	#
+	echo -n "Restarting $DESC: $NAME"
+	start-stop-daemon --stop --quiet --pidfile \
+		/var/run/$NAME.pid --exec $DAEMON
+		--exec $ETUD
+	sleep 1
+	start-stop-daemon --start --quiet --pidfile \
+		/var/run/$NAME.pid --exec $DAEMON
+	echo "."
+	;;
+  *)
+	N=/etc/init.d/$NAME
+	# echo "Usage: $N {start|stop|restart|reload|force-reload}" >&2
+	echo "Usage: $N {start|stop|restart|force-reload}" >&2
+	exit 1
+	;;
+esac
+
+exit 0
