@@ -1,4 +1,6 @@
 
+CXXFLAGS=-O3 -g -Wall
+
 all: client
 
 clean:
