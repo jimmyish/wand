@@ -13,9 +13,16 @@
 #include <vector>
 #include <map>
 #include <sys/socket.h>
+
+#ifdef LINUX
 #include <linux/sockios.h>
 #include <linux/if.h>
 #include <linux/if_arp.h>
+#else
+#include <net/if.h>
+#include <net/if_arp.h>
+#endif
+
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -81,11 +88,12 @@ int init_interface(void)
 	int skfd;
 	ether_t ether;
 
+
 	/* Open a socket so we can ioctl() */
-  if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-  	logger(MOD_IF, 1, "Socket create failed - %m\n");
-    return -1;
-  }
+	if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
+	    logger(MOD_IF, 1, "Socket create failed - %m\n");
+	    return -1;
+        }			
 
 	int ifd;
 	if ((ifd=driver->setup(ifname))<=0) {
@@ -95,13 +103,23 @@ int init_interface(void)
 	/* Configure the MAC Address on the interface */
 	snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ifname);
 	ether.parse(macaddr);
+#ifdef LINUX
 	ifr.ifr_hwaddr.sa_family = ARPHRD_ETHER;
 	memcpy(&ifr.ifr_hwaddr.sa_data, ether.address, sizeof(ether.address));
 	if(ioctl(skfd, SIOCSIFHWADDR, &ifr) < 0) {
 		logger(MOD_IF, 1, "Socket Set MAC Address failed - %m\n");
 		return -1;
 	}
-  
+#else
+        ifr.ifr_addr.sa_len = ETHER_ADDR_LEN;
+        ifr.ifr_addr.sa_family = AF_LINK;
+        memcpy(&ifr.ifr_addr.sa_data, ether.address, sizeof(ether.address));
+        if (ioctl(skfd, SIOCSIFLLADDR, (caddr_t)&ifr) < 0) {
+                        logger(MOD_IF,1,"ioctl (set lladdr)");
+                        return -1;
+        }
+#endif
+	
 	/* Set ARP and MULTICAST on the interface */
   /* Read the current flags on the interface */
   if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {

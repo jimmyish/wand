@@ -1,5 +1,11 @@
 CFLAGS=-g -Wall -I../include/
 
+ifeq ($(OS),Linux)
+CFLAGS+=-DLINUX
+else
+CFLAGS+=-DFREEBSD
+endif
+
 all: wansd
 
 clean:

@@ -9,6 +9,9 @@
 #include <utility> /* pair<,> */
 #include <list> /* list<> */
 #include <string.h>
+#ifndef LINUX
+#include <sys/types.h>
+#endif LINUX
 #include <sys/socket.h> /* sockaddr_in */
 #include <netinet/in.h> /*sockaddr_in */
 #include <ctype.h> /* hack hack */

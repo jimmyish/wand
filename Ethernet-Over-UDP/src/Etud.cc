@@ -205,7 +205,11 @@ int main(int argc,char **argv)
 	}
 	/* Check that ifname is set */
 	if (ifname == NULL) {
+#ifdef LINUX
 		ifname = strdup("wan0");
+#else
+		ifname = strdup("tap0");
+#endif
 	}
 	/* Check that a control file has been specified */
 	if (ctrlfile == NULL) {

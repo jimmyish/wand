@@ -4,8 +4,8 @@
  * details.
  */
 
-#include <sys/socket.h>
 #include <sys/types.h> /* for select */
+#include <sys/socket.h>
 #include <sys/time.h> /* for select */
 #include <sys/un.h>
 #include <stdio.h>

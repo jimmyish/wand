@@ -21,11 +21,14 @@
  *                    devices
  */
  
+#ifndef LINUX
+#include <sys/types.h>
+#endif LINUX
+#include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
 #include <net/if_arp.h>
 #include <net/route.h>
-#include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -83,6 +86,7 @@ static int ethertap_setup(char *req_name)
 		return -1;
 	}
 
+#ifdef LINUX
 
 	snprintf(old_ifname, IFNAMSIZ, "tap%d", tapdevno);
 
@@ -98,6 +102,7 @@ static int ethertap_setup(char *req_name)
 	}
 
 	logger(MOD_DRIVERS, 15, "Ethertap interface renamed to %s.\n", ifname);
+#endif LINUX
 	logger(MOD_DRIVERS, 15, "ethertap_setup() completed...\n");
 
 	return fd;
@@ -127,6 +132,7 @@ static int ethertap_down(void)
 			strerror(errno));
         	return -1;
     	}
+#ifdef LINUX
 
 	snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ifname);
 	snprintf(ifr.ifr_newname, IFNAMSIZ, "%s", old_ifname);
@@ -137,7 +143,7 @@ static int ethertap_down(void)
 			ifname, strerror(errno));
 		return -1;
 	}
-
+#endif LINUX
 
 	close(skfd);		
 	if (fd >= 0) 
@@ -152,12 +158,20 @@ static int ethertap_down(void)
 
 static int ethertap_read(char *frame,int length)
 {
+#ifdef LINUX
 	return read(fd,frame,length);
+#else
+	return read(fd,frame+2,length) + 2;
+#endif 
 }
 
 static int ethertap_write(char *frame, int sz) 
 {
+#ifdef LINUX
 	return write(fd,frame,sz);
+#else
+	return write(fd,frame+2,sz-2);
+#endif
 }
 
 static struct interface_t ethertap = {
