@@ -165,6 +165,25 @@ void ui_process_callback(int fd)
 	}
 	*(buffer+len)='\0';
 
+  // check for extra cruft
+
+  //step from end of buffer, removing \r\n 
+  //at the moment, this will kill all \r\n
+  
+  while (len >= 0) {
+    if (buffer[len] == '\r') {
+      buffer[len] = '\0';
+    } else if (buffer[len] == '\n') {
+      buffer[len] = '\0';
+    }
+    len--;
+  }
+  
+  if (strcmp(buffer,"") == 0)
+    return;
+		
+  //logger(MOD_IPC, 5, "Parsing %s\n", buffer);
+   
 	int argc=parse(buffer,argv,MAX_ARGS);
 
 	
