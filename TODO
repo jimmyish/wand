@@ -2,8 +2,6 @@
 * Add a configuration file for Etud -- including where it's drivers are, or
   hard code the correct place that make install put 'em.
 * have wand resolve FQDN.
-* wand/wansd both need to have daemonise() (see Etud.cc for details on how)
-  .) should move daemonise() from Etud.cc someplace more global.
 * Etud should buffer and do one write for it's replies, instead of multiple.
 
 * client.cc send_request() needs work:
@@ -12,5 +10,10 @@
 * client.cc needs a converse() routine
 * client.cc does not "pipeline" requests. Good Luck!
 * Etud.cc does not support the "version" query.
-* Etud needs to set SIGPIPE to SIG_IGN.
+* Etud now ignores SIGPIPE while using write(2)
 * Wand shouldn't close the socket prematurely.
+
+* wand/wansd both now have daemonise and put_pid()
+  .) This code is ugly and relies upon "../Ethernet-Over-UDP/src" too much.
+     Bad Bad Bad.
+
