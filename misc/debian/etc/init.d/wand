@@ -12,7 +12,6 @@ DAEMON=/usr/local/sbin/wand
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=wand
 DESC="Wide Area Network Daemon"
-ARGS=" -f ${WAND_CONF} -p ${PID_FILE} "
 
 if [ ! -f ${WAND_CONF} ]; then
         echo Could not find configuration file ${WAND_CONF}
@@ -30,6 +29,7 @@ do
 done < $WAND_CONF
 
 test -x $DAEMON || exit 0
+ARGS=" -f ${WAND_CONF} -p ${PID_FILE} "
 
 set -e
 case "$1" in

@@ -9,7 +9,6 @@
 ETUDCONF=/usr/local/etc/etud.conf
 DAEMON=/usr/local/sbin/Etud
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
-ARGS="-f $ETUDCONF -p $PIDFILE"
 NAME=Etud
 DESC="EtherneT over Udp Daemon"
 IP=/bin/ip
@@ -37,6 +36,7 @@ do
 done < $ETUDCONF
 
 test -x $DAEMON || exit 0
+ARGS="-f $ETUDCONF -p $PIDFILE"
 
 set -e
 
