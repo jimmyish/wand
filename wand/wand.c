@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <arpa/inet.h>
 #include <malloc.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -141,9 +142,9 @@ void clearOldEntries(void)
 				free(tmp->mac);
 				free(tmp);
 			}
-			tmp2=tmp;
-			tmp=tmp->next;
 		}
+		tmp2=tmp;
+		tmp=tmp->next;
 	}
 }
 
@@ -171,6 +172,7 @@ int main(int argc,char **argv)
 	struct sockaddr_in address;
 	struct sockaddr_in serveraddr;
 	struct timeval tm;
+	struct hostent *host;
 
 	if (argc<2) {
 	  printf("%s serverip mac\n",argv[0]);
@@ -192,11 +194,18 @@ int main(int argc,char **argv)
 	address.sin_port = htons(0);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
+	host = gethostbyname(argv[1]);
+
+	if (!host) {
+		fprintf(stderr,"%s: Not found\n",argv[1]);
+		return 1;
+	}
+
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_port = htons(44444);
-	if(!inet_aton(argv[1],&serveraddr.sin_addr)) {
-	  	perror("inet_aton");
-	}
+	memcpy(&serveraddr.sin_addr.s_addr,
+			host->h_addr,
+			sizeof(serveraddr.sin_addr.s_addr));
 	if (bind(sock,(struct sockaddr *)&address,sizeof(address))<0) {
 		perror("bind");
 		return 1;
