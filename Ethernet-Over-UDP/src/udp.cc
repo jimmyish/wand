@@ -4,8 +4,30 @@
 #include <assert.h>
 #include <netinet/in.h> /* for AF_INET and sockaddr_in */
 #include <unistd.h> /* for read() */
+#include "driver.h"
+#include "mainloop.h"
 
 #include "udp.h"
+
+int udpfd;
+
+
+int udp_read(int udpfd,char *buffer,int size)
+{
+	return read(udpfd,buffer,size);
+}
+
+const int BUFFERSIZE=65536;
+
+static void udp_callback(int fd)
+{
+	static char buffer[BUFFERSIZE];
+	int size;
+	size=udp_read(udpfd,buffer,BUFFERSIZE);
+	if (size<16)
+		return;
+	send_interface(buffer,size);
+};
 
 int udp_start(int port=22222)
 {
@@ -25,11 +47,7 @@ int udp_start(int port=22222)
 		perror("bind");
 		return -1;
 	}
-
+	udpfd=sock;
+	addRead(sock,udp_callback);
 	return sock;
-}
-
-int udp_read(int udpfd,char *buffer,int size)
-{
-	return read(udpfd,buffer,size);
 }

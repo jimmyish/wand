@@ -16,6 +16,8 @@ struct interface_t {
 
 void register_device(struct interface_t *interface_description);
 struct interface_t *find_interface(char *s);
+int init_interface(struct interface_t *interface);
+void send_interface(char *buffer,int size);
 
 #ifdef __cplusplus
 }

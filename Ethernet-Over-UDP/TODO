@@ -1,2 +1,7 @@
 
  * Implement it.
+
+ * Create name spaces:
+	* ui::
+	* udp::
+	* driver::

@@ -5,7 +5,7 @@ This is the Ethernet Over UDP part of WAND.  It's rather simple, it uses the
 ethertap driver under linux.  (Make sure you have NetLink when you compiled
 your kernel, and at least have ethertap as a module, also read
 /usr/src/linux/Documentation/networking/ethertap.txt about how to create the
-device nodes).
+device nodes). make-tap.sh does this for you.
 
 Ethertap over UDP assigns each node a unique number which becomes their
 'hardware address'.  The driver keeps a list of MAC -> ip:port
