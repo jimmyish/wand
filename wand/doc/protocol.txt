@@ -1,0 +1,53 @@
+
+the person doing the "connect" sends:
+HELLO 11:22:33:44:55:66 password
+where 11:22:33:44:55:66 is their mac address and password is their password
+the remote (listening) end sends:
+HELLO 00:22:44:66:88:AA password
+when it hears the hello from the other end.
+
+Both ends remember (macaddress,getpeername()) as one entry in their route
+table.  they then send a complete list of the network as they see it to each
+other:
+
+LINK aa:bb:cc:dd:ee:ff 01:02:03:04:05:06
+
+representing a tcp link between those two hosts.  It then sends:
+
+EOB 1
+
+(End of Burst stage one).  A good implementation checks that all nodes are
+reachable, if they aren't the other side is buggy.
+
+then they send:
+IP aa:bb:cc:dd:ee:ff 1.2.3.4
+a list of mac -> ip addresses.  A good implementation notices if the mac
+address is for a macaddress that is unreachable and complains.  then a
+
+EOB
+
+end of burst.
+
+they send to their other links a copy of the LINK line above, and the IP
+line as required.
+
+Periodotically they send the command:
+PING :<number>
+to each other, and expect
+PONG :<the same number>
+back in reply.
+
+if the connection is severed they send a:
+BREAK aa:bb:cc:dd:ee:ff 01:02:03:04:05:06
+to all their other clients.  On Recieving a 'BREAK', all clients set a flag
+in their own client structure, and clear it on everyone elses.  Then for
+each client structure that has the flag set, they set it for all clients
+that have a link from that structure.  When no more changes can be made, all
+clients without the flag set are removed (and no command is sent).  This
+means that one simple command can break large portions of the 'net.
+When a client recieves a LINK command, it ignores it if it already has it. 
+When a client recieves an IP command, it also ignores it if it already has
+it.
+
+Thusly a client should only recieve those commands which contain useful
+information, and the minimum number of commands to be able to do this.
