@@ -19,6 +19,7 @@
 
 #include "list.h"
 #include "ui.h"
+#include "udp.h"
 #include "driver.h"
 #include "mainloop.h"
 #include "debug.h"
@@ -79,7 +80,7 @@ static void m_getmac(int fd,char **argv,int argc)
 static void m_getport(int fd,char **argv,int argc)
 {
 	char tbuff[80];
-	sprintf(tbuff,"+GETPORT %u\r\n", udp_port);
+	sprintf(tbuff,"+GETPORT %u\r\n", udpport);
 	ui_send(fd, tbuff);
 	ui_send(fd, "-OK\r\n");
 

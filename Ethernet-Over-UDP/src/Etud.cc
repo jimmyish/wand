@@ -67,7 +67,7 @@ int main(int argc,char **argv)
 	char *cmodule=NULL;
 	char *cpidfile=NULL;
 	int cdo_daemonise=1;
-	int cudp_port=-1;
+	int cudpport=-1;
 	
 	/* Possible config file options */
 	config_t main_config[] = {
@@ -139,8 +139,8 @@ int main(int argc,char **argv)
 		pidfile = strdup(cpidfile);
 	if (cdo_daemonise == 0)
 		do_daemonise = 0;
-	if (cudp_port != -1)
-		udp_port = cudp_port;
+	if (cudpport != -1)
+		udpport = cudpport;
 		
 	/* Check that a MAC address has been specified */
 	if (macaddr == NULL) {
