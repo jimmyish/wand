@@ -28,6 +28,7 @@
 #include "config.h"
 
 extern int modtolevel[];
+extern int default_log_level;
 char *macaddr=NULL;
 char *ifname=NULL;
 int mtu=1280;
@@ -54,6 +55,7 @@ void usage(const char *prog) {
 	[-h]		- This help
 	[-i ifname]	- Name of the interface to create 
 	[-l port]	- Communicate on the specified port
+	[-L level]	- Default logging level, 0 = silent, 15 = noisy
 	[-m macaddr]	- MAC address for the created interface
   	[-M mtu] - MTU for the created interface
 	[-p pidfile]	- File to store pid in
@@ -83,6 +85,7 @@ int main(int argc,char **argv)
 	int cdo_daemonise=1;
 	int cudpport=-1;
   	int cmtu=-1;
+	int clevel=-1;
 
 	/* Possible config file options */
 	config_t main_config[] = {
@@ -94,17 +97,20 @@ int main(int argc,char **argv)
 		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ "ctrlfile", TYPE_STR|TYPE_NULL, &ctrlfile },
     		{ "mtu", TYPE_INT|TYPE_NULL, &mtu },
-		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
-		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
+		{ "debug_default", TYPE_INT|TYPE_NULL, &default_log_level},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
 		{ "debug_MOD_IF", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IF]},
+		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
+		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
+		{ "debug_MOD_LIST", TYPE_INT|TYPE_NULL, &modtolevel[MOD_LIST]},
+		{ "debug_MOD_NETWORK", TYPE_INT|TYPE_NULL, &modtolevel[MOD_NETWORK]},
 		{ NULL, 0, NULL }
 	};
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "c:d:Df:hi:l:m:M:p:")) != -1){
-	switch(ch){	
+	while((ch = getopt(argc, argv, "c:d:Df:hi:l:L:m:M:p:")) != -1){
+		switch(ch){	
 			case 'c':
 				cctrlfile = strdup(optarg);
 				break;
@@ -127,6 +133,12 @@ int main(int argc,char **argv)
 			case 'l':
 				cudpport = atoi(optarg);
 				break;
+			case 'L':
+				if(sscanf(optarg, "%i", &default_log_level) 
+				   == 0)
+					default_log_level = -1;
+				clevel = default_log_level;
+				break;
 			case 'm':
 				cmacaddr = strdup(optarg);
 				break;
@@ -143,6 +155,14 @@ int main(int argc,char **argv)
 		}
 	}
 
+	/* Check the default log level is sane. */
+	if(default_log_level < 0 || default_log_level > 15) {
+		default_log_level = 15;
+		logger(MOD_INIT, 1, "Default logging level must be a number"
+				" between 0 and 15. Giving up.\n");
+		return 1;
+	}
+	
 	/* Parse the config file */
 	if (conffile != NULL) {
 	  	logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
@@ -169,12 +189,14 @@ int main(int argc,char **argv)
 		do_daemonise = 0;
 	if (cudpport != -1)
 		udpport = cudpport;
-  if (cmtu != -1)
-    mtu = cmtu;
+	if (cmtu != -1)
+		mtu = cmtu;
 	if (cctrlfile != NULL) 
 		ctrlfile = strdup(cctrlfile);
 	if (cifname != NULL)
 		ifname = strdup(cifname);
+	if (clevel != -1)
+		default_log_level=clevel;
 		
 	/* Check that a MAC address has been specified */
 	if (macaddr == NULL) {

@@ -22,11 +22,14 @@ static int loglookup[]={LOG_ALERT, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
  * If the level passed to logger is higher than the level specified in this
  * array then we do not print the message.
  *
- * Initialise to zero so no messages are printed. The configuration system 
- * really really wants to set these higher !
+ * Initialise to -1 which means each level uses the default specified in
+ * default_debug_level.
  */
 
-int modtolevel[]= {7, 7, 7, 7, 7, 7, 7, 7};
+int modtolevel[]= {-1, -1, -1, -1, -1, -1, -1, -1};
+
+/* Make the default log level 7, all non debug info. */
+int default_log_level = 7;
 
 extern int daemonised;
 
@@ -36,19 +39,30 @@ void logger(int module, int level, const char *format, ...)
 {
 	va_list ap;
 	char buffer[513];
+	int module_level;
 	
 	/* Sanity checks. If these fail it's the person who is calling us
 	 * at fault !
 	 */
 	
+	assert(default_log_level <= 15 && default_log_level >= 0);
 	assert(level <= 15 && level >= 0);
 	assert(module <= 7 && module >= 0);
 	assert(daemonised == 0 || daemonised == 1);
-	assert(modtolevel[module] <= 15 && modtolevel[module] >= 0);
+	assert(modtolevel[module] <= 15 && modtolevel[module] >= -1);
 	
 	va_start(ap, format);
 
-	if(level <= modtolevel[module]){
+	/* Check if the module is being logged at level -1, if it is,
+	 * this module is actually being logged at the default level. */
+
+	if(modtolevel[module] < 0){
+		module_level = default_log_level;
+	} else {
+		module_level = modtolevel[module];
+	}
+	
+	if(level <= module_level){
 		if(! daemonised){
 			if(level < 7){
 				vfprintf(stderr, format, ap);
