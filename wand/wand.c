@@ -263,13 +263,7 @@ int main(int argc,char **argv)
 	strcpy(conffile, "/usr/local/etc/wand.conf");
 	strcpy(control_file_path,"/var/run/Etud.ctrl");
 	macaddr[0] = '\0';
-	
-	
-	if(parse_config(main_config, conffile))
-		return 1;
-	
-	host = gethostbyname(server);
-	
+		
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
 	  switch(ch)
@@ -301,7 +295,12 @@ int main(int argc,char **argv)
 				break;
 		}
 	}
+
+	if(parse_config(main_config, conffile))
+		return 1;
 	
+	host = gethostbyname(server);
+
 	if(!host)
 		return 1;
 	
