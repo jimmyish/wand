@@ -57,7 +57,6 @@ void logger(int module, int level, const char *format, ...)
 		} else {
 			vsnprintf(buffer, sizeof(buffer), format, ap);
 			syslog(loglookup[level], "%s", buffer);
-			free(buffer);
 		}
 	}
 
