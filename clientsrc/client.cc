@@ -107,13 +107,20 @@ int select_on( int fd, char *buffer, int bufsize, struct timeval *timeout )
 			"went wrong.\n" );
 		return -3;
 	}
-
-	if( 0 > (retval = read( fd, buffer, bufsize )) ) {
+	/* We need our Terminating Null, so grab one less byte than needed
+	 */
+	if( 0 > (retval = read( fd, buffer, bufsize-1 )) ) {
 		perror("select_on: read");
 		exit( 1 );
 	}
+	/* array contains elements in 0 :: retval-1, so set \0 on retval
+	 */
 	buffer[ retval ] = '\0';
-	return retval;
+#if 0
+	printf( "select_on(%i, %p, %i, %p) = %i *%s*\n", fd, buffer,
+		bufsize, timeout, retval+1, buffer );
+#endif
+	return retval+1;
 }
 
 /* displays a reply to the screen. Pretty simple/crude 
@@ -149,72 +156,116 @@ int display_reply( char *buffer )
 	return 0;
 }
 
+/* (wuz)
+ * Take a buffer which may end part way through a valid string
+ * Output all the complete valid strings and return the number of characters
+ * left (N) that are a partial string.
+ * DOES alter buffer, ultimately should leave the first N characters
+ * as being the partial string, this may result in buffer[0] == '\0'
+ * (end wuz)
+ */
+int mangle_buffer( char *buffer, int len )
+{
+  char *ptr = buffer;
+  char *prev = buffer;
+  int retval = 0;
+  
+  while( *ptr ) {
+    if( *ptr == '\n' || *ptr == '\r' ) {
+      *ptr = '\0';
+      ptr++;
+      while(*ptr && (*ptr == '\n' || *ptr == '\r' )) {
+	ptr++;
+      }
+      /* so, now prev points to start of last line; and ptr points to
+       * start of next line - parse and iterate
+      */
+      retval = display_reply( prev );
+      if( retval < 0 ) { /* Message finished or error - stop iterating */
+	return retval;
+      }
+      prev = ptr;
+    } else {
+      ptr++;
+    }
+  }
+  retval = 0;
+  if( ptr != prev ) {
+    memmove( buffer, prev, ptr - prev );
+    buffer[ptr-prev] = '\0';
+    retval = ptr - prev;
+  } else {
+    buffer[0] = '\0';
+  }
+  //  printf( "DBG: %p vs %p = %i; $$%s$$\n", prev, ptr, ptr - prev, buffer );
+  return retval;
+}
+
+#define BUFSIZE 512
 int send_request( char *one, char *two, char *three )
 {
-	char buffer[512];
-	int size;
-	int retval;
-	struct sockaddr_un sockname;
-	struct timeval timeout;
-	int fd=socket(PF_UNIX,SOCK_STREAM,0);
-
-	if (fd<0) {
-		perror("control socket");
-		return 1;
-	}
-
-	sockname.sun_family = AF_UNIX;
-	strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
-
-	if (connect(fd,(const sockaddr *)&sockname,sizeof(sockname))<0) {
-		perror("control connect");
-		close(fd);
-		return -1;
-	}
-
-	snprintf( buffer, 512, "%s %s %s\n\r", one, (two)?two:"",
-		  (three)?three:"" );
-	if( write(fd,buffer,strlen(buffer)) != (signed)strlen(buffer) )
-		return 2;
-
-	if( rude > 0 ) {
-		printf( "Wrote \"%s\".\n Rudely closing fd and leaving.\n",
-			buffer );
-		close( fd );
-		return 0;
-	}
-
-	/* two second timeout between packets today */
-	timeout.tv_usec = 0;
-	timeout.tv_sec = 2;
-
-	while( (size=select_on(fd,buffer,512,&timeout))>0 ) {
-		char *ptr = buffer;
-		char *prev = buffer;
-		while( *ptr ) {
-			if( *ptr == '\n' || *ptr == '\r' ) {
-				*ptr = '\0';
-				ptr++;
-				while(*ptr && (*ptr == '\n' || *ptr == '\r' )) {
-					ptr++;
-				}
-				/* so, now prev points to start of last
-				 * line; and ptr points to start of next 
-				 * line - parse and iterate
-				 */
-				retval = display_reply( prev );
-				if( retval < 0 ) {
-					close( fd );
-					return 0;
-				}
-				prev = ptr;
-			} else {
-				ptr++;
-			}
-		}
-	}
-	close( fd );
-	return 0;
+  char buffer[BUFSIZE+1];
+  char *p = buffer;
+  int size = 0;
+  int last = 0;
+  int retval = 0;
+  struct sockaddr_un sockname;
+  struct timeval timeout;
+  int fd = socket(PF_UNIX,SOCK_STREAM,0);
+  
+  if( fd < 0 ) {
+    perror("control socket");
+    return 1;
+  }
+  
+  sockname.sun_family = AF_UNIX;
+  strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
+  
+  if (connect(fd,(const sockaddr *)&sockname,sizeof(sockname))<0) {
+    perror("control connect");
+    close(fd);
+    return -1;
+  }
+  
+  snprintf( buffer, 512, "%s %s %s\n\r", one, (two)?two:"",
+	    (three)?three:"" );
+  if( write(fd,buffer,strlen(buffer)) != (signed)strlen(buffer) )
+    return 2;
+  
+  if( rude > 0 ) {
+    printf( "Wrote \"%s\".\n Rudely closing fd and leaving.\n",
+	    buffer );
+    close( fd );
+    return 0;
+  }
+  
+  /* two second timeout between packets today */
+  timeout.tv_usec = 0;
+  timeout.tv_sec = 2;
+  
+  p = buffer;
+  while( ( size = select_on( fd, p, BUFSIZE-last, &timeout) ) > 0 ) {
+    
+    retval = mangle_buffer( buffer, last + size );
+    if( retval < 0 ) {
+      close( fd );
+      return 0;
+    }
+    /* Need more than 2 bytes to store next reply
+     * BUFSIZE value = Design decision really.
+     */
+    if( BUFSIZE - retval < 2 ) {
+      fprintf( stderr, "Insufficient buffer space / reply from server too long"
+	       " in send_request(). Buffer: %u\n", BUFSIZE );
+      exit( 1 );
+    }
+    last = retval; /* Typically 0 */
+    p = &buffer[ last ];
+  }
+  if( last != 0 )
+    mangle_buffer( buffer, last );
+  close( fd );
+  return 0;
 }
 
 
@@ -239,6 +290,7 @@ int main( int argc, char *argv[] )
 	};
 
 	while( 1 ) {
+	  //	  printf( "\n!!! argv=\"%p\" \n", argv );
 		o = getopt_long( argc, argv, "hvRlcad", long_options, NULL );
 		if( o == -1 )
 			break;
