@@ -92,7 +92,7 @@ bool rem_ip(ether_t ether)
 
 sockaddr_in *find_ip(ether_t ether)
 {
-  sockaddr_in *found;
+  sockaddr_in *found = NULL;
   
   if (online.empty() ) {
     logger(MOD_LIST, 15, "find_ip() Empty\n");
