@@ -1,5 +1,6 @@
 #include "config.h"
 #include <stdio.h>
+#include <errno.h>
 
 int parse_config(config_t *config,char *filename)
 {
@@ -9,5 +10,5 @@ int parse_config(config_t *config,char *filename)
     return errno;
   }
 
-   
+  yyparse();  
 }

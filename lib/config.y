@@ -13,12 +13,11 @@ config
 
 lws
 : /* empty */
-| TOK_WHITE lws
+| lws TOK_WHITE 
 ;
 
 value
-: TOK_IDENTIFIER
-| TOK_STRING
+: TOK_STRING
 | TOK_FALSE
 | TOK_TRUE
 | TOK_WHITE
