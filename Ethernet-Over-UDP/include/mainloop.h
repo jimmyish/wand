@@ -11,5 +11,6 @@ typedef void (*callback_t)(int fd);
 void addRead(int fd,callback_t callback);
 void remRead(int fd);
 void mainloop(void);
+void sig_hnd( int signo );
 
 #endif
