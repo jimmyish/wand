@@ -113,7 +113,7 @@ int init_interface(void)
   }
   /* remove the NOARP, set the MULTICAST flags */
   ifr.ifr_flags &= ~IFF_NOARP;
-  ifr.ifr_flags != IFF_MULTICAST;
+  ifr.ifr_flags |= IFF_MULTICAST;
   
   /* commit changes */
   if (ioctl(skfd, SIOCSIFFLAGS, &ifr) < 0) {
