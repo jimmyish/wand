@@ -266,7 +266,7 @@ int main(int argc,char **argv)
 	}
 	
 	/* Override config file with command line options if set */
-	if (!host) 
+	if (!host && server) 
 		host = gethostbyname(server);
 	if (ccontrol_file_path != NULL)
 		control_file_path = strdup(ccontrol_file_path);
