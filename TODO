@@ -1,4 +1,3 @@
-* wand desperately needs to use select, not sleep() :)
 * Add make install
 * Add a configuration file for Etud -- including where it's drivers are, or
   hard code the correct place that make install put 'em.
@@ -13,3 +12,5 @@
 * client.cc needs a converse() routine
 * client.cc does not "pipeline" requests. Good Luck!
 * Etud.cc does not support the "version" query.
+* Etud needs to set SIGPIPE to SIG_IGN.
+* Wand shouldn't close the socket prematurely.

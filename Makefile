@@ -7,5 +7,5 @@ all:
 
 clean:
 	for i in $(SUBDIR); do \
-		$(MAKE) -C $$i all; \
+		$(MAKE) -C $$i clean; \
 	done
