@@ -138,6 +138,9 @@ int display_reply( char *buffer )
 	
 	if( strlen( buffer ) <= 1 ) {
 		printf("Boring / Blank line from server. no fun.\n");
+		printf( "please strace this program and if you get this"
+		        "message again, send me a copy of the output!\n"
+			" -- Gerard\n" );
 		return 0;
 	}
 
