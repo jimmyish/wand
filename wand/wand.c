@@ -243,39 +243,47 @@ int main(int argc,char **argv)
 	struct timeval tm;
 	struct hostent *host = NULL;
 	response_t *resp;
-	char *pidfile = "wand";
-	char *macaddr = 0;
-	char *server = 0;
 	char ch;
-	
-	char *conffile = 0;
+
+	/* The real config options */
 	int do_daemonise=1;
-	int cdo_daemonise=-1;
+	char *pidfile = "wand";
+	char *server = 0;
+	int udpport;
+	char macaddr[18];
 	
+	/* Config options from the command line */
+	char *conffile = 0;
+	char *cpidfile=NULL;
+	char *ccontrol_file_path=NULL;
+	int cdo_daemonise=-1;
+	int cudpport=-1;
+	
+	/* Config options from the config file */
 	config_t main_config[] = {
 		{"server", TYPE_STR|TYPE_NULL, &server},
 		{"controlfile", TYPE_STR|TYPE_NULL, &control_file_path},
 		{"daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise},
+		{"udpport", TYPE_INT|TYPE_NULL, &udpport},
 		{NULL, 0, NULL}
 	};
 
 	// Set defaults
 	conffile = strdup("/usr/local/etc/wand.conf");
 	control_file_path = strdup("/var/run/Etud.ctrl");
-	/*macaddr[0] = '\0';*/
 		
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
 	  switch(ch)
 	    {	
 			case 'c':
-				strncpy(control_file_path, optarg, 1024);
+				ccontrol_file_path = strdup(optarg);
 				break;
 			case 'D':
 				cdo_daemonise=0;
 				break;
 			case 'f':
-				strncpy(conffile, optarg, 1024);
+				conffile = strdup(optarg);
 				break;
 			case 'h':
 				usage(argv[0]);
@@ -289,21 +297,32 @@ int main(int argc,char **argv)
 				}
 				break;
 			case 'l':
-				
+				cudpport = atoi(optarg);
+				break;
 			case 'p':
-				pidfile = strdup(optarg);
+				cpidfile = strdup(optarg);
 				break;
 		}
 	}
 
+	/* Read the config file */
 	if(parse_config(main_config, conffile))
 	{
 		logger( MOD_INIT, 3, "Error parsing config file: %s\n", conffile);
 		return 1;
 	}
 	
-	// host = gethostbyname(server);
+	/* Override config file with command line options if set */
+	if (!host) 
+		host = gethostbyname(server);
+	if (ccontrol_file_path != NULL)
+		control_file_path = strdup(ccontrol_file_path);
+	if (cudpport!=-1) 
+		udpport = cudpport;
+	if (cpidfile != NULL) 
+		pidfile = strdup(cpidfile);
 
+	/* Check that required parameters are there */
 	if(!host)
 	{
 		logger( MOD_INIT, 3, "Cannot resolve hostname\n");
@@ -317,7 +336,6 @@ int main(int argc,char **argv)
 
 	/* Get the MAC address from Etud */
 	resp = askEtud("GETMAC");
-	print_response(resp, stdout);
 	if( resp->status == OKAY) {
 		strncpy(macaddr, resp->data[0]+7, 17);
 	}
@@ -331,7 +349,7 @@ int main(int argc,char **argv)
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	serveraddr.sin_family = AF_INET;
-	serveraddr.sin_port = htons(44444);
+	serveraddr.sin_port = htons(udpport);
 	memcpy(&serveraddr.sin_addr.s_addr,
 			host->h_addr,
 			sizeof(serveraddr.sin_addr.s_addr));
