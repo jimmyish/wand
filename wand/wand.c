@@ -56,6 +56,47 @@ void tellEtud(char *msg)
   close( fd );
 }
 
+response_t *askEtud(char *msg)
+{
+  struct sockaddr_un sockname;
+  struct timeval timeout;
+  int fd=socket(PF_UNIX,SOCK_STREAM,0);
+  response_t *resp = NULL;
+
+  if (fd<0) { 
+    perror("control socket");
+    fprintf(stderr,"Didn't write '%s'",msg);
+    return;
+  } 
+  
+  sockname.sun_family = AF_UNIX;
+  strcpy(sockname.sun_path,control_file_path);
+  
+  if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
+    perror("control connect()"); 
+    fprintf(stderr,"Didn't write '%s'",msg);
+    close(fd); 
+    return;
+  }
+  
+  if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
+    return;
+
+  /* two second timeout between packets today */
+  timeout.tv_usec = 0;
+  timeout.tv_sec = 2;
+
+  if( NULL == (resp = get_response( fd, &timeout )) ) {
+    close( fd );
+    return NULL;
+  }
+
+	close( fd );
+
+	return resp;
+
+}
+
 char *getword(char **buffer,int *len)
 {
   char *tmp=*buffer;
@@ -185,36 +226,59 @@ int main(int argc,char **argv)
 	struct sockaddr_in serveraddr;
 	struct timeval tm;
 	struct hostent *host;
-
-	if (argc<2) {
-	  printf("%s serverip mac [controlfile]\n",argv[0]);
-	  return 1;
+	char *pidfile = "wand";
+	bool got_server = false;
+	char macaddr[18];
+	
+	// Set defaults
+	strcpy(control_file_path,"/var/run/Etud.ctrl");
+	macaddr[0] = '\0';
+	
+	// Parse command line arguments
+	char ch;
+	while((ch = getopt(argc, argv, "c:i:p:")) != -1){
+	  switch(ch)
+	    {	
+			case 'c':
+				strncpy(control_file_path, optarg, 1024);
+				break;
+			case 'i':
+				host = gethostbyname(optarg);
+				if (!host) {
+					fprintf(stderr,"%s: Not found\n",optarg);
+					return 1;
+				}
+				got_server=true;
+				break;
+			case 'p':
+				pidfile = strdup(optarg);
+				break;
+			}
 	}
-
-	if (argc>3) {
-		strcpy(control_file_path,argv[3]);
+	
+	if (!got_server) {
+		fprintf(stderr, "%s: -i server [-c controlfile] [-p pidfile]\n", 
+						argv[0]);
+		return 1;
 	}
-	else {
-		strcpy(control_file_path,"/var/run/Etud.ctrl");
-	}
-
+	
 	if (sock<0) {
 		perror("socket");
 		return 1;
 	};
+
+	/* Get the MAC address from Etud */
+	response_t *resp = askEtud("GETMAC");
+	if( response->status >= OKAY && response->status <= TIMEOUT_DATA ) {
+		printf("%s\n", response->data[i]);
+		strncpy(macaddr, response->data[i], 17);
+	}
 
 	srand(time(NULL));
 	
 	address.sin_family = AF_INET;
 	address.sin_port = htons(0);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
-
-	host = gethostbyname(argv[1]);
-
-	if (!host) {
-		fprintf(stderr,"%s: Not found\n",argv[1]);
-		return 1;
-	}
 
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_port = htons(44444);

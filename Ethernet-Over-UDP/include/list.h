@@ -13,9 +13,9 @@
 #include <stdio.h> /* hack hack */
 
 class ether_t {
-	private:
-		unsigned char address[6];
 	public:
+		unsigned char address[6];
+
 		ether_t(void) {
 			memset(address,0,sizeof(address));
 		}

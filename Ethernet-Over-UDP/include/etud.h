@@ -8,5 +8,6 @@
 #define ETUD_H
 
 extern char *macaddr;
+extern char *ifname;
 
 #endif
