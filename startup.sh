@@ -6,6 +6,11 @@
 #
 #
 
+[ -e /var/run/Etud.ctrl ] && {
+	echo Control file exists, Etud already running?
+	exit 1;
+}
+
 CONF=/usr/local/etc
 
 if [ -f ${CONF}/wand.$(hostname -s).conf ]; then
