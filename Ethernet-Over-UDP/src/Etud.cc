@@ -13,6 +13,7 @@
 #include <dlfcn.h> /* for dlopen */
 #include <unistd.h> /* for select */
 #include <fcntl.h> /* for open */
+#include <getopt.h> /* for parsing command line options */
 
 #include "list.h"
 #include "driver.h"
@@ -36,10 +37,11 @@ int load_module(char *filename)
 	return 1;
 }
 
-int main(int arvc,char **argv)
+int main(int argc,char **argv)
 {
 	int do_daemonise=1;
 	char *module=NULL;
+	char *conffile=NULL;
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
@@ -48,13 +50,31 @@ int main(int arvc,char **argv)
 		{ "debug_MOD_DRIVERS", TYPE_INT, &modtolevel[MOD_DRIVERS]},
 		{ NULL, 0, NULL }
 	};
-	
-	logger(MOD_INIT, 15, "About to parse config\n");
-	if (parse_config(main_config,"/usr/local/etc/wand.conf")) {
-	  logger(MOD_INIT,1,"Bad Config file, giving up\n");
-	  return 1;
+
+	// Parse command line arguments
+	char ch;
+	while((ch = getopt(argc, argv, "f:")) != -1){
+	  switch(ch)
+	    {	
+	    case 'h':
+	      conffile = strdup(optarg);
+	    }
 	}
-	
+
+	if (conffile != NULL) {
+	  logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
+	  if (parse_config(main_config,conffile)) {
+	    logger(MOD_INIT,1,"Bad Config file %s, giving up\n", conffile);
+	    return 1;
+	  }
+	} else {
+	  logger(MOD_INIT, 15, "About to parse default config file\n");
+	  if (parse_config(main_config,"/usr/local/etc/etud.conf")) {
+	    logger(MOD_INIT,1,"Bad Config file, giving up\n");
+	    return 1;
+	  }
+	}
+
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
 	if (!load_module(module)) {
 		logger(MOD_INIT, 1, "Aborting...\n");
