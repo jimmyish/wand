@@ -163,8 +163,9 @@ int ui_send(int sock,char *msg)
 static void ui_callback(int fd)
 {
 	int fd2=accept(fd,NULL,0);
-	if (fd2>=0)
+	if (fd2>=0){
 		addRead(fd2,ui_process_callback);
+		logger(MOD_IPC, 15, "UI accept succeeded\n");
 }
 
 int ui_setup(char *s="/var/run/Etud.ctrl")
