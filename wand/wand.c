@@ -12,6 +12,7 @@
 void tellEtud(char *msg)
 {
   struct sockaddr_un sockname;
+  char buffer[1024];
   int fd=socket(PF_UNIX,SOCK_STREAM,0);
   if (fd<0) { 
     perror("control socket");
@@ -31,6 +32,8 @@ void tellEtud(char *msg)
 
  if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
    return;
+ 
+ read(fd,buffer,strlen(buffer));
  close(fd);
 }
 
