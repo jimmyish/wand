@@ -33,6 +33,7 @@ extern struct interface_t *driver;
 
 void register_device(struct interface_t *interface_description);
 int init_interface(void);
+int shutdown_interface(void);
 void send_interface(char *buffer,int size);
 
 #ifdef __cplusplus
