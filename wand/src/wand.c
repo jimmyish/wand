@@ -21,6 +21,10 @@
 #include "debug.h"
 #include "wand.h"
 
+
+extern int modtolevel[];
+extern int default_log_level;
+
 char *control_file_path = 0;
 int sock;
 char macaddr[18];
@@ -165,6 +169,7 @@ void usage(const char *prog) {
 	[-h]		- This help
 	[-i server]	- Specify the wansd server 
 	[-l port]	- Communicate on the specified port
+	[-L level]      - Default logging level, 0 = silent, 15 = noisy
 	[-p pidfile]	- File to store pid in
 	[-P protocol]	- The protocol module to use
 Options on command line override those in the config file.				\n", basename(progname));
@@ -220,12 +225,13 @@ int cdo_daemonise=-1;
 char *conffile = 0;
 struct hostent *host = NULL;
 int cudpport=-1;
+int clevel=-1;
 
 int parse_commandline(int argc,char **argv)
 {
 	char ch;
 	// Parse command line arguments
-	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:P:")) != -1){
+	while((ch = getopt(argc, argv, "c:Df:h:i:l:L:p:P:")) != -1){
 	  switch(ch)
 	    {	
 			case 'c':
@@ -251,6 +257,12 @@ int parse_commandline(int argc,char **argv)
 			case 'l':
 				cudpport = atoi(optarg);
 				break;
+			case 'L':
+                                if(sscanf(optarg, "%i", &default_log_level) 
+                                   == 0)
+                                        default_log_level = -1;
+                                clevel = default_log_level;
+                                break;
 			case 'p':
 				cpidfile = strdup(optarg);
 				break;
@@ -287,6 +299,9 @@ int main(int argc,char **argv)
 		{"daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise},
 		{"udpport", TYPE_INT|TYPE_NULL, &udpport},
 		{"protocol", TYPE_STR|TYPE_NULL, &proto},
+		{ "debug_default", TYPE_INT|TYPE_NULL, &default_log_level},
+                { "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
+                { "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{NULL, 0, NULL}
 	};
 
@@ -301,7 +316,14 @@ int main(int argc,char **argv)
 	usr1.sa_flags = SA_SIGINFO;
 	sigaction(SIGUSR1, &usr1, 0);
 	
-
+	/* Check the default log level is sane. */
+	if(default_log_level < 0 || default_log_level > 15) {
+		default_log_level = 15;
+		logger(MOD_INIT, 1, "Default logging level must be a number"
+				" between 0 and 15. Giving up.\n");
+		return 1;
+	}
+	
 	/* Read the config file */
 	if(parse_config(main_config, conffile))
 	{
@@ -318,7 +340,9 @@ int main(int argc,char **argv)
 		udpport = cudpport;
 	if (cpidfile != NULL) 
 		pidfile = strdup(cpidfile);
-
+	if (clevel != -1)
+		default_log_level=clevel;
+	
 	/* Check that required parameters are there */
 	if(!host)
 	{
