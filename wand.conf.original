@@ -22,7 +22,7 @@
 # default: 192.168.255.255
 # required: no
 #
-# BROADCAST="192.168.255.255
+# BROADCAST=192.168.255.255
 
 # BITLENGTH
 # The IP address CIDR subnet bitlength
@@ -31,7 +31,7 @@
 # default: 16
 # required: no
 #
-# BITLENGTH="16"
+# BITLENGTH=16
 
 # ETHERNET
 # the MAC address of the ethernet card on wand
