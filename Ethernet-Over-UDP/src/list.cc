@@ -18,6 +18,7 @@
 #include <list>
 #include <sys/socket.h>
 #include <netinet/in.h>
+#include <assert.h>
 
 online_t online;
 

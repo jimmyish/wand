@@ -49,18 +49,18 @@ void usage(const char *prog) {
 
 	progname=strdup(prog);
 	
-	printf("%s:	[-d module]	- Transport driver to use
-	[-D]		- Don't daemonise
-	[-f configfile]	- Read config from this file
-	[-h]		- This help
-	[-i ifname]	- Name of the interface to create 
-	[-l port]	- Communicate on the specified port
-	[-L level]	- Default logging level, 0 = silent, 15 = noisy
-	[-m macaddr]	- MAC address for the created interface
-  	[-M mtu] - MTU for the created interface
-	[-p pidfile]	- File to store pid in
-
-Options on command line override those in the config file.\n", 
+	printf("%s:	[-d module]	- Transport driver to use\n"
+"	[-D]		- Don't daemonise\n"
+"	[-f configfile]	- Read config from this file\n"
+"	[-h]		- This help\n"
+"	[-i ifname]	- Name of the interface to create \n"
+"	[-l port]	- Communicate on the specified port\n"
+"	[-L level]	- Default logging level, 0 = silent, 15 = noisy\n"
+"	[-m macaddr]	- MAC address for the created interface\n"
+"  	[-M mtu] - MTU for the created interface\n"
+"	[-p pidfile]	- File to store pid in\n"
+"\n"
+"Options on command line override those in the config file.\n", 
 	basename(progname));
 
 }

@@ -11,6 +11,7 @@
 #include <stdio.h> /* for fprintf and perror */
 #include <map>
 #include <errno.h>
+#include <assert.h>
 #include "debug.h"
 #include "mainloop.h"
 
