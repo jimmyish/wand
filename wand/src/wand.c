@@ -182,7 +182,7 @@ int mainloop(void)
 			 every 10 minutes
 		      */
 	struct timeval tm;
-	int expire;
+	int expire=0;
 
 	tm.tv_sec=0;
 	tm.tv_usec=0;
@@ -195,7 +195,7 @@ int mainloop(void)
 
 		now = time(NULL);
 
-		if (expire >= now) {
+		if (expire <= now) {
 		  if (flag) {
 	            expire = now + 30;
 		  }
@@ -393,11 +393,6 @@ int main(int argc,char **argv)
 	free( resp );
 
 	/* check that the port we got from Etud is sane */
-
-	if( our_etud_port <= 0 || our_etud_port > 65535 ){
-		logger(MOD_IPC, 1, "Got a bad port from Etud - Exiting");
-		return 1;
-	}
 
 	srand(time(NULL));
 	
