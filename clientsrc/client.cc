@@ -117,7 +117,7 @@ int main( int argc, char *argv[] )
 
 	while( 1 ) {
 	  //	  printf( "\n!!! argv=\"%p\" \n", argv );
-		o = getopt_long( argc, argv, "hvRlcad", long_options, NULL );
+		o = getopt_long( argc, argv, "hvRlmpcad", long_options, NULL );
 		if( o == -1 )
 			break;
 		switch( o ) {
