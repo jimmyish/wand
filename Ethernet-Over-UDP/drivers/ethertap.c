@@ -41,7 +41,7 @@ static int ethertap_setup(unsigned long myid)
 	printf("ethertap_setup( %lu ) entered...\n", myid);
 
 	fd = 0;	
-	tapdevno = 3;
+	tapdevno = 0;
 	
 	while (tapdevno<MAX_ETHERTAP_DEVICES) {
 		snprintf(tapdevice, 16, "/dev/tap%d", tapdevno);
