@@ -67,13 +67,14 @@ static int ethertap_setup(char *req_name)
 	}
 	
 	if(fd < 0){
+		logger(MOD_DRV, 1, "Can't open ethertap device, aborting.\n");
 		return -1;
 	}
 	
-	logger(MOD_DRV, 1, "Can't open ethertap device, aborting.\n");
 	
 	if(ioctl(fd, SIOCSIFNAME, ifname, strlen(ifname)) < 0){
-		logger(MOD_DRV, 1, "Could not rename ethertap interface to %s.\n", 
+		logger(MOD_DRV, 1, 
+				"Could not rename ethertap interface to %s - %m.\n", 
 				ifname);
 		return -1;
 	}
