@@ -1,0 +1,11 @@
+# Sample /etc/network/interfaces (Debian Specific) file 
+#
+# NOTE: You MUST change the IP Addresses shown below
+
+noauto wan0
+iface wan0 inet static
+    address 192.168.66.1
+    netmask 255.255.0.0
+    network 192.168.0.0
+    broadcast 192.168.255.255
+    mtu 1280
