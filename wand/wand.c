@@ -237,11 +237,17 @@ int main(int argc,char **argv)
 	macaddr[0] = '\0';
 	
 	// Parse command line arguments
-	while((ch = getopt(argc, argv, "c:i:p:f:h:")) != -1){
+	while((ch = getopt(argc, argv, "c:f:h:i:p:")) != -1){
 	  switch(ch)
 	    {	
 			case 'c':
 				strncpy(control_file_path, optarg, 1024);
+				break;
+			case 'f':
+				strncpy(cfgfile, optarg, 1024);
+				break;
+			case 'h':
+				fprintf(stderr, "%s: -i server [-c controlfile] [-p pidfile] [-f configfile]\n", argv[0]);
 				break;
 			case 'i':
 				host = gethostbyname(optarg);
@@ -252,12 +258,6 @@ int main(int argc,char **argv)
 				break;
 			case 'p':
 				pidfile = strdup(optarg);
-				break;
-			case 'f':
-				strncpy(cfgfile, optarg, 1024);
-				break;
-			case 'h':
-				fprintf(stderr, "%s: [-i server] [-c controlfile] [-p pidfile] [-f configfile]\n", argv[0]);
 				break;
 		}
 	}
