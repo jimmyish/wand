@@ -14,6 +14,8 @@
 #include <unistd.h> /* for getopt, select */
 #include <getopt.h> /* for getopt */
 
+static int rude = 0;
+
 void usage( char *pname ) 
 {
 	printf( "\
@@ -22,6 +24,7 @@ Usage:\n\
 Where:\n\
 	-h	This Help Screen\n\
 	-v	Query for the version of Etud\n\
+	-R	Be RUDE - for testing ONLY\n\
 	-c	Conversation mode, enter Queries interactively<tm>\n\
 	-l	Query for a list of MAC addresses and IP addresses\n\
 	-a	Query to add the given MAC address and IP address\n\
@@ -174,6 +177,13 @@ int send_request( char *one, char *two, char *three )
 	if( write(fd,buffer,strlen(buffer)) != (signed)strlen(buffer) )
 		return 2;
 
+	if( rude > 0 ) {
+		printf( "Wrote \"%s\".\n Rudely closing fd and leaving.\n",
+			buffer );
+		close( fd );
+		return 0;
+	}
+
 	/* two second timeout between packets today */
 	timeout.tv_usec = 0;
 	timeout.tv_sec = 2;
@@ -220,6 +230,7 @@ int main( int argc, char *argv[] )
 	/* {name,argument,flag,value} */
 	{"help",0,0,'h'},
 	{"version",0,0,'v'},
+	{"Rude",0,0,'R'},
 	{"list",0,0,'l'},
 	{"converse",0,0,'c'},
 	{"add",0,0,'a'},
@@ -228,7 +239,7 @@ int main( int argc, char *argv[] )
 	};
 
 	while( 1 ) {
-		o = getopt_long( argc, argv, "hvlcad", long_options, NULL );
+		o = getopt_long( argc, argv, "hvRlcad", long_options, NULL );
 		if( o == -1 )
 			break;
 		switch( o ) {
@@ -238,6 +249,10 @@ int main( int argc, char *argv[] )
 		case 'v':
 			any_arg++;
 			send_request( "VERSION", NULL, NULL );
+			break;
+		case 'R':
+			rude++;
+			printf( "How Rude!\n" );
 			break;
 		case 'l':
 			any_arg++;
