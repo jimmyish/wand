@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include <string.h>
 #include <malloc.h>
+#include "../Ethernet-Over-UDP/include/daemons.h"
 
 struct tMapping {
 	struct tMapping *next;
@@ -104,6 +105,10 @@ int main(int argc,char **argv)
 		perror("bind");
 		return 1;
 	}
+	
+	daemonise();
+	put_pid("wansd");
+                	
 	for (;;) {
 		int addrlen=sizeof(address);
 		char buffer[65536];
