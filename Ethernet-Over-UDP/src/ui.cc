@@ -111,17 +111,25 @@ static void m_getport(int fd,char **argv,int argc)
 static void m_list(int fd,char **argv,int argc)
 {
 	char tbuff[80];
-	ui_send(fd,"+LIST ethernet\tip\r\n");
+	ui_send(fd,"+LIST ethernet\tip\tport\r\n");
+	
+	logger(MOD_IPC, 15, "About to perform list\n");
 	for (online_t::const_iterator i=online.begin();
 	     i!=online.end();
 	     i++) 
 	{
+		logger(MOD_IPC, 15, "+LIST %s\t%s\t%d\r\n",
+			i->first(),
+			inet_ntoa(i->second.sin_addr), 
+			ntohs(i->second.sin_port));
+
 		sprintf(tbuff,"+LIST %s\t%s\t%d\r\n",
 			i->first(),
 			inet_ntoa(i->second.sin_addr), 
 			ntohs(i->second.sin_port));
 		ui_send(fd,tbuff);
 	}
+	logger(MOD_IPC, 15, "Finished list\n");
 	ui_send(fd,"-OK\r\n");
 	return;
 }
