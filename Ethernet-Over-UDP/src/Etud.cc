@@ -55,7 +55,7 @@ void usage(const char *prog) {
 	[-i ifname]	- Name of the interface to create 
 	[-l port]	- Communicate on the specified port
 	[-m macaddr]	- MAC address for the created interface
-  [-M mtu] - MTU for the created interface
+  	[-M mtu] - MTU for the created interface
 	[-p pidfile]	- File to store pid in
 
 Options on command line override those in the config file.\n", 
@@ -93,7 +93,7 @@ int main(int argc,char **argv)
 		{ "pidfile", TYPE_STR|TYPE_NULL, &pidfile },
 		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ "ctrlfile", TYPE_STR|TYPE_NULL, &ctrlfile },
-    { "mtu", TYPE_INT|TYPE_NULL, &mtu },
+    		{ "mtu", TYPE_INT|TYPE_NULL, &mtu },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},

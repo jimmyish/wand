@@ -7,3 +7,5 @@ baz "Hello World!"
 # This tests boolean
 boing on
 
+# and again
+foo_nargle 2
