@@ -311,7 +311,7 @@ int main(int argc,char **argv)
 		    tm.tv_sec=300+rand()%600;
 		  }
 		  flag=1;
-		  sendto(sock,argv[2],strlen(argv[2])+1,0,
+		  sendto(sock,macaddr,strlen(macaddr)+1,0,
 		    (struct sockaddr *)&serveraddr, sizeof(serveraddr));
 		}
 		FD_ZERO(&rfds);
