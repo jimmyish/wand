@@ -3,11 +3,14 @@
 #include "config.parser.h"
 %}
 
+%x double_quote
 
 %%
 
-\"[^"]*\"	{ yylval.str=(char *)strdup(yytext); return TOK_STRING; }
-\'[^']*\"	{ yylval.str=(char *)strdup(yytext); return TOK_STRING; }
+\"	BEGIN(double_quote);
+<double_quote>[^\"]*	{ yylval.str=(char *)strdup(yytext); return TOK_STRING; }
+<double_quote>\"	BEGIN(INITIAL);
+
 false		{ return TOK_FALSE; }
 off		{ return TOK_FALSE; }
 true		{ return TOK_TRUE; }
