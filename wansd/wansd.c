@@ -1,9 +1,11 @@
-#include <stdio.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
-#include <unistd.h>
-#include <string.h>
+#include <arpa/inet.h>
 #include <malloc.h>
+#include <stdio.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 #include "../Ethernet-Over-UDP/include/daemons.h"
 
 struct tMapping {

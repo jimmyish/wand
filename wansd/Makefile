@@ -1,3 +1,4 @@
+CFLAGS=-g -Wall
 
 all: wansd
 
