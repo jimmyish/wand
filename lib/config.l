@@ -1,6 +1,6 @@
 %{
 #include <string.h>
-#include "config.h"
+#include "config.parser.h"
 %}
 
 
@@ -22,5 +22,5 @@ on		{ return TOK_TRUE; }
 
 void yyerror(char *s)
 {
-	fprintf(stderr,"%s\n",s);
+	fprintf(stderr,"error: %s\n",s);
 }

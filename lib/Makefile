@@ -6,23 +6,23 @@ SUCCESS=$(addsuffix .test,$(basename $(TESTS)))
 all: libconfig.a daemons.o protoverlay.o test
 
 libconfig.a:  \
-	     libconfig.a(config.o) \
+	     libconfig.a(config.parser.o) \
 	     libconfig.a(libconfig.o) \
-	     libconfig.a(config.yy.o)
+	     libconfig.a(config.lexer.o)
 	ranlib $@
 
 test: $(SUCCESS) libconfig.a
 
 clean:
-	rm -f libconfig.a tests/*.test *.o config.h
+	rm -f libconfig.a tests/*.test *.o config.h config.parser.h
 
-%.c %.h: %.y
+%.parser.c: %.y
 	bison -d -o$@ $<
 
-%.yy.c: %.l %.h
+%.lexer.c: %.l
 	flex -o$@ $<
 
 %.test: %.o libconfig.a
-	gcc $(CFLAGS) $< -L. -lconfig -lfl -o $(basename $<) 
+	gcc $(CFLAGS) $< -L. -lconfig -lfl -o $(basename $<)
 	$(basename $<) $(basename $<).in 
 
