@@ -14,6 +14,12 @@
 #include <map>
 #include <sys/socket.h>
 
+#if 0 /* Too Much Debug Info */
+#define debug_printf(a...) printf(a)
+#else
+#define debug_printf(a...) do {} while(0)
+#endif
+
 struct ether_header_t {
 	unsigned short int fcs;
         struct ether_header eth;
@@ -71,12 +77,12 @@ static void do_read(int fd)
 	static char buffer[BUFFERSIZE];
 	int size=fd2interface[fd]->read(buffer,BUFFERSIZE);
 	if (size<16) {
-		printf("Runt, Oink! Oink! %i<16\n",size);
+		debug_printf("Runt, Oink! Oink! %i<16\n",size);
 		return;
 	};
 	ether_t ether(((ether_header_t *)(buffer))->eth.ether_dhost);
 	if (ether.isBroadcast()) {
-		printf("Broadcasting %s\n",ether());
+		debug_printf("Broadcasting %s\n",ether());
 		for (online_t::const_iterator i=online.begin();
 		     i!=online.end();
 		     i++) 
@@ -85,11 +91,11 @@ static void do_read(int fd)
 	else {
 		ip_t ip = find_ip(ether);
 		if (ip) {
-			printf("Sending %s to %i\n",ether(),ip);
+			debug_printf("Sending %s to %i\n",ether(),ip);
 			udp_sendto(ip,buffer,size);
 		}
 		else {
-			printf("No match for %s\n",ether());
+			debug_printf("No match for %s\n",ether());
 		};
 	};
 }
