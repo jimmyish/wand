@@ -1,2 +1,3 @@
+* wand desperately needs to use select, not sleep() :)
 * Add make install
 * Add a configuration file for Etud -- including where it's drivers are.
