@@ -74,7 +74,7 @@ $IP addr add $IFADDR/8 broadcast 10.255.255.255 dev $INTERFACE
 echo -n " * Starting wand"
 for i in $SERVERS; do
 	echo " ${i}"
-	./wand/wand $ETHERNET $i &
+	./wand/wand $i $ETHERNET &
 done
 echo
 
