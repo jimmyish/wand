@@ -20,7 +20,7 @@ install: all
 	@echo -n Installing Etud...
 	@install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/Etud \
-		/usr/local/lib/Etud && echo Done
+		/usr/local/sbin/Etud && echo Done
 	@echo -n Installing Drivers...
 	@install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/drivers/ethertap.so \
