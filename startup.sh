@@ -78,7 +78,7 @@ $IP link set $INTERFACE \
 	arp on \
 	multicast off \
 	address $ETHERNET \
-	mtu 576
+	mtu 1280
 
 echo " * Configuring ipv4 layer."
 echo "  * Removing stale entries"
