@@ -29,6 +29,7 @@
 
 # SERVERS
 # location of wansd servers you associate with.
+# this must be a list of ip's.  FQDN's won't work (yet).
 #
 # default: none
 # required: yes

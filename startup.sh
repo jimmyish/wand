@@ -28,7 +28,7 @@ if [ "x$ETHERNET" = "x" ]; then
 	exit;
 fi
 
-if [ "x$SERVER" = "x" ]; then
+if [ "x$SERVERS" = "x" ]; then
 	echo No listed wand servers.
 	exit;
 fi
