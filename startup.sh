@@ -8,10 +8,10 @@
 
 CONF=/usr/local/etc
 
-if [ -f $(CONF)/wand.$(hostname -s).conf ]; then
-	. $(CONF)/wand.$(hostname -s).conf
-elif [ -f $(CONF)/wand.conf ]; then
-	. $(CONFI)/wand.conf
+if [ -f ${CONF}/wand.$(hostname -s).conf ]; then
+	. ${CONF}/wand.$(hostname -s).conf
+elif [ -f ${CONF}/wand.conf ]; then
+	. ${CONF}/wand.conf
 else
 	echo Could not find configuration file
 	exit
