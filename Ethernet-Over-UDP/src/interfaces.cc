@@ -40,13 +40,9 @@ extern "C" {
 
 const int BUFFERSIZE = 65536;
 
-static void udp_sendto(ip_t ip,char *buffer,int size)
+static void udp_sendto(sockaddr_in addr,char *buffer,int size)
 {
-	struct sockaddr_in dest;
-	dest.sin_family = AF_INET;
-	dest.sin_port=htons(udpport);
-	dest.sin_addr.s_addr=ip;
-	sendto(udpfd,buffer,size,0,(const struct sockaddr *)&dest,sizeof(dest));
+	sendto(udpfd,buffer,size,0,(const struct sockaddr *)&addr,sizeof(addr));
 }
 
 static void do_read(int fd)
@@ -66,10 +62,11 @@ static void do_read(int fd)
 			udp_sendto(i->second,buffer,size);
 	}
 	else {
-		ip_t ip = find_ip(ether);
-		if (ip) {
-			logger(MOD_IF,15,"Sending %s to %i\n",ether(),ip);
-			udp_sendto(ip,buffer,size);
+		sockaddr_in *addr = find_ip(ether);
+		if (addr) {
+			logger(MOD_IF,15,"Sending %s to %i\n",ether(),
+					addr->sin_addr);
+			udp_sendto(*addr,buffer,size);
 		}
 		else {
 			logger(MOD_IF,10,"No match for %s\n",ether());

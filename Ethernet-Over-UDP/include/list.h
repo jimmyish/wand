@@ -9,6 +9,8 @@
 #include <utility> /* pair<,> */
 #include <list> /* list<> */
 #include <string.h>
+#include <sys/socket.h> /* sockaddr_in */
+#include <netinet/in.h> /*sockaddr_in */
 #include <ctype.h> /* hack hack */
 #include <stdio.h> /* hack hack */
 
@@ -84,21 +86,22 @@ class ether_t {
 		}
 };
 
-typedef unsigned int ip_t; /* need unsigned 32 bit */
 
-/* Maps an ethernet address to an ip
+/* Maps an ethernet address to a connection (IP / port)
  * Provides no guarantee any key (ether_t) only has ONE data value (ip_t)
  */
-typedef std::pair<ether_t, ip_t > node_t;
+typedef std::pair<ether_t, struct sockaddr_in > node_t;
 typedef std::list<node_t> online_t;
+
+/* Define an operator to allow sockaddr_in == sockaddr_in tests */
+
+bool operator ==(const struct sockaddr_in a, const struct sockaddr_in b);
 
 extern online_t online;
 
-
-
-bool add_ip(ether_t ether,ip_t ip); /* false if already existed */
+bool add_ip(ether_t ether, sockaddr_in addr); /* false if already existed */
 bool rem_ip(ether_t ether); /* false if not found */
-ip_t find_ip(ether_t ether); /* return the ip associated with this ether */
+sockaddr_in *find_ip(ether_t ether); /* return the addr associated with ether */
 
 /* Outputs the entire table to the given file stream.
  * Returns the number of entries so dumped

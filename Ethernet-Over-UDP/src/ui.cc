@@ -28,6 +28,8 @@
 /* "ADD mac ip [port]" */
 static void m_add(int fd,char **argv,int argc)
 {
+	sockaddr_in addr;
+	
 	if (argc<2) {
 		ui_send(fd,"-ERR Not enough parameters\r\n");
 		return;
@@ -37,13 +39,14 @@ static void m_add(int fd,char **argv,int argc)
 		ui_send(fd,"-ERR MAC address does not grok\r\n");
 		return;
 	}
-	ip_t ip;
-	if ((signed int)(ip=inet_addr(argv[2]))==-1) {
+	if (! inet_aton(argv[2], &addr.sin_addr)) {
 		ui_send(fd,"-ERR IP address does not grok\r\n");
 		return;
 	}
 	/* todo add port */
-	if( add_ip(ether,ip) ) {
+	addr.sin_port=htons(udpport);
+	
+	if( add_ip(ether,addr) ) {
 	  ui_send(fd,"-OK updated\r\n");
 	} else {
 	  ui_send(fd,"-OK no change\r\n");
@@ -97,11 +100,10 @@ static void m_list(int fd,char **argv,int argc)
 	     i!=online.end();
 	     i++) 
 	{
-		struct sockaddr_in sockaddr;
-		sockaddr.sin_addr.s_addr=i->second;
-		sprintf(tbuff,"+LIST %s\t%s\r\n",
+		sprintf(tbuff,"+LIST %s\t%s\t%d\r\n",
 			i->first(),
-			inet_ntoa(sockaddr.sin_addr));
+			inet_ntoa(i->second.sin_addr), 
+			i->second.sin_port);
 		ui_send(fd,tbuff);
 	}
 	ui_send(fd,"-OK\r\n");

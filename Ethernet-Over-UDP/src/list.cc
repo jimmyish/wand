@@ -16,25 +16,36 @@
 #include "debug.h"
 #include <string>
 #include <list>
+#include <sys/socket.h>
+#include <netinet/in.h>
 
 online_t online;
 
-bool add_ip(ether_t ether,ip_t ip)
+bool operator ==(const struct sockaddr_in a, const struct sockaddr_in b)
 {
-  bool retval = true;
+	if (a.sin_addr.s_addr != b.sin_addr.s_addr)
+		return false;
+	if (a.sin_port != b.sin_port)
+		return false;
+	if (a.sin_family != b.sin_family)
+		return false;
+	
+	return true;
+}
 
+
+bool add_ip(ether_t ether, struct sockaddr_in addr)
+{
   if( !online.empty() ) {
     online_t::iterator i = online.begin();
-    ip_t found = false;
-    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Entered\n", ether(), ip);
+    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Entered\n", ether(), addr.sin_addr);
     while( i != online.end() ) { /* Not empty, search for given ether */
       if( ((*i).first) == ether ) { /* match, handle */
-	found = (*i).second;
-	if( found == ip ) { /* ether and ip both match - no change */
+	if(addr == (*i).second) { /* ether and ip both match - no change */
 	  logger(MOD_LIST, 15, "\nadd_ip() Unchanged (will return f)\n");
 	  return false;
 	} else { /* node has changed, update it */
-	  (*i).second = ip;
+	  (*i).second = addr;
 	  logger(MOD_LIST, 15, "\nadd_ip() Changed (will return T)\n");
 	  return true;
 	}
@@ -43,15 +54,16 @@ bool add_ip(ether_t ether,ip_t ip)
     }
     /* given ether is not in list, add it */
     logger(MOD_LIST, 15, "\nadd_ip() Was Not In List (will return T)\n");
-    online.push_back( node_t::pair(ether,ip) );
+    online.push_back( node_t::pair(ether,addr) );
     return true;
   } else { /* List was empty, add the node */
-    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Was Empty (will return T)\n", ether(), ip);
-    online.push_back( node_t::pair(ether,ip) );
+    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Was Empty (will return T)\n", 
+		    ether(), addr.sin_addr);
+    online.push_back( node_t::pair(ether,addr) );
     return true;
   }
   /* should never get here */
-  return retval;
+  assert(0);
 }
 
 bool rem_ip(ether_t ether)
@@ -76,8 +88,10 @@ bool rem_ip(ether_t ether)
   return found_and_removed;
 }
 
-ip_t find_ip(ether_t ether)
+sockaddr_in *find_ip(ether_t ether)
 {
+  sockaddr_in *found;
+  
   if (online.empty() ) {
     logger(MOD_LIST, 15, "find_ip() Empty\n");
     /* No need to dump the table -- it's empty :) */
@@ -86,16 +100,15 @@ ip_t find_ip(ether_t ether)
   logger(MOD_LIST, 15, "\nfind_ip(%s) Entered\n", ether());
 
   online_t::iterator i = online.begin();
-  ip_t found = false;
   
   while( i != online.end() ) {
     if( ((*i).first) == ether ) { /* match, return */
-      found = (*i).second;
+      found = &(*i).second;
       break;
     }
     ++i;
   }
-  logger(MOD_LIST, 15, "find_ip() = %x\n", found);
+  logger(MOD_LIST, 15, "find_ip() = %x\n", found->sin_addr);
   return found;
 }
 
@@ -108,8 +121,9 @@ int dump_table( FILE *stream )
   online_t::iterator i = online.begin();
   int c = 0;
   while( i != online.end() ) {
-    fprintf( stream, "%2i: online[\"%s\"] = %x\n", c,
-	     ((*i).first)(), (*i).second );
+    fprintf( stream, "%2i: online[\"%s\"] = %x, %d\n", c,
+	     ((*i).first)(), (*i).second.sin_addr.s_addr, 
+	     (*i).second.sin_port );
     ++i;
     ++c;
   }
@@ -123,22 +137,54 @@ int dump_table( FILE *stream )
 
 int main(int argc,char **argv)
 {
+	struct sockaddr_in test, test2;
+
+	test.sin_family = AF_INET;
+	test2.sin_family = AF_INET;
+	test.sin_port = 0;
+	test2.sin_port = 0;
+	test.sin_addr.s_addr= 0;
+	test2.sin_addr.s_addr = 0;
+	
+	assert(test == test2);
+
+	test2.sin_family = AF_LOCAL;
+	
+	assert(test != test2);
+
+	test2.sin_family = AF_INET;
+	test2.sin_port = 1;
+
+	assert(test != test2);
+
+	test2.sin_port = 0;
+	test2.sin_addr.s_addr = 1;
+
+	assert(test != test2);
+
+	test.sin_port = 22222;
+	test.sin_addr.s_addr = 0x04030201;
+
+	test2.sin_port = 22222;
+	test2.sin_addr.s_addr = 0x04030202;
+
+	
 	ether_t ether;
 	ether_t ether2;
 	ether.parse("01:02:03:04:05:06");
 	ether2.parse("01:02:03:04:05:07");
-	assert(rem_ip(ether)==false);
-	add_ip(ether,ip_t(0x04030201));
-	assert(find_ip(ether) == ip_t(0x04030201));
-	assert(rem_ip(ether)!=false);
-	assert(rem_ip(ether)==false);
-	add_ip(ether,ip_t(0x04030201));
-	add_ip(ether,ip_t(0x04030201));
-	add_ip(ether2,ip_t(0x04030202));
-	assert(find_ip(ether2) == ip_t(0x04030202));
-	assert(find_ip(ether) == ip_t(0x04030201));
-	assert(rem_ip(ether)!=false);
-	assert(rem_ip(ether2)!=false);
+	assert(rem_ip(ether) == false);
+	add_ip(ether,test);
+	assert(*find_ip(ether) == test);
+	assert(rem_ip(ether) != false);
+	assert(rem_ip(ether) == false);
+	add_ip(ether,test);
+	add_ip(ether,test);
+	add_ip(ether2,test2);
+	assert(*find_ip(ether2) == test2);
+	assert(*find_ip(ether) == test);
+	assert(rem_ip(ether) != false);
+	assert(rem_ip(ether2) != false);
 }
 #endif
 
