@@ -131,7 +131,7 @@ int main(int argc,char **argv)
             unlink(pidfile);
       	}
       	// shutdown the interface
-	syslog(LOG_DAEMON,"Attempting to shutdown interfacce\n");
-	logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
+	//syslog(LOG_DAEMON,"Attempting to shutdown interfacce\n");
+	//logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
 	shutdown_interface();
 }
