@@ -2,6 +2,8 @@
 #define LIST_H
 #include <map>
 #include <string.h>
+#include <ctype.h> /* hack hack */
+#include <stdio.h> /* hack hack */
 
 class ether_t {
 	private:

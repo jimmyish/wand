@@ -22,8 +22,6 @@ int load_module(char *s)
 
 int main(int arvc,char **argv)
 {
-	int myid = 1; /* ID number on the network */
-
 	if (!load_module("drivers/ethertap.so")) {
 		cout << "Aborting..." << endl;
 		return 1;

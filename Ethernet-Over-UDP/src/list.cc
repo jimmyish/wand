@@ -14,20 +14,20 @@ online_t online;
 
 void add_ip(ether_t ether,ip_t ip)
 {
-	if (online[ether]!=0)
-		rem_ip(ether);
 	online[ether]=ip;
 }
 
 bool rem_ip(ether_t ether)
 {
-	if (online[ether]==0)
-		return false; /* TODO: Log error */
+	if (online.find(ether)==online.end())
+		return false;
 	return true;
 }
 
 ip_t find_ip(ether_t ether)
 {
+	if (online.find(ether)==online.end())
+		return false;
 	return online[ether];
 }
 
