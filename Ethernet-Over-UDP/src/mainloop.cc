@@ -39,10 +39,13 @@ int add_sig_hnd( void )
 	struct sigaction handler;
   
 	/* Assign our_sig_hnd as our signal handler */
-	handler.sa_handler = our_sig_hnd;
+	handler.sa_handler = SIG_IGN;
   
 	/* We don't want to block any other signals while handling this one */
 	sigemptyset(&handler.sa_mask);
+
+	/* Continously ignore this */
+	handler.sa_flags = SA_RESTART;
 
 	/* Make these values effective. */
 	if (sigaction(SIGPIPE, &handler, NULL) < 0) {
