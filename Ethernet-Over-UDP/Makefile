@@ -17,7 +17,7 @@ drivers/%.o: drivers/%.c
 	$(CC) $(CFLAGS) -fPIC -c $^ -o $@
 
 src/%-test: src/%.cc
-	$(CC) $(CFLAGS) -DTEST $^ -o $@
+	$(CXX) $(CFLAGS) -DTEST $^ -o $@
 
 drivers/%.so: drivers/%.o
 	ld -x --shared $< -o $@
