@@ -46,7 +46,7 @@ int add_sig_hnd( void )
 		return -1;
 	}
 	
-	/* Add a handler to SIGTERM */
+	/* Add a handler to SIGTERM and SIGINT */
 	handler.sa_handler = &sig_hnd;
 	handler.sa_flags = SA_RESTART;
 
@@ -57,6 +57,13 @@ int add_sig_hnd( void )
 	  	return -1;
 	}
 
+	sigemptyset(&handler.sa_mask);
+	if (sigaction(SIGINT, &handler, NULL) < 0) {
+	  	logger(MOD_INIT, 3 , "Failed to add signal handler:"
+			" SIGINT, %s\n", strerror(errno));
+	  	return -1;
+	}
+	
 	return 0;
 }
 
