@@ -110,6 +110,7 @@ void mainloop(void)
 	  }
 
 	}
+	logger(MOD_INIT, 1, "Shutting down - breaking out of mainloop\n");
 	// Close file descriptors
 	// add: shut interface down
 	for (fd2callback_t::const_iterator i=fd2callback.begin(); 
