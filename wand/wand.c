@@ -66,7 +66,7 @@ response_t *askEtud(char *msg)
   if (fd<0) { 
     perror("control socket");
     fprintf(stderr,"Didn't write '%s'",msg);
-    return;
+    return NULL;
   } 
   
   sockname.sun_family = AF_UNIX;
@@ -76,11 +76,11 @@ response_t *askEtud(char *msg)
     perror("control connect()"); 
     fprintf(stderr,"Didn't write '%s'",msg);
     close(fd); 
-    return;
+    return NULL;
   }
   
   if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
-    return;
+    return NULL;
 
   /* two second timeout between packets today */
   timeout.tv_usec = 0;
@@ -225,17 +225,18 @@ int main(int argc,char **argv)
 	struct sockaddr_in address;
 	struct sockaddr_in serveraddr;
 	struct timeval tm;
-	struct hostent *host;
+	struct hostent *host = NULL;
 	char *pidfile = "wand";
-	bool got_server = false;
+	int got_server = 0;
 	char macaddr[18];
+	char ch;
+	response_t *resp;
 	
 	// Set defaults
 	strcpy(control_file_path,"/var/run/Etud.ctrl");
 	macaddr[0] = '\0';
 	
 	// Parse command line arguments
-	char ch;
 	while((ch = getopt(argc, argv, "c:i:p:")) != -1){
 	  switch(ch)
 	    {	
@@ -248,7 +249,7 @@ int main(int argc,char **argv)
 					fprintf(stderr,"%s: Not found\n",optarg);
 					return 1;
 				}
-				got_server=true;
+				got_server=1;
 				break;
 			case 'p':
 				pidfile = strdup(optarg);
@@ -268,10 +269,10 @@ int main(int argc,char **argv)
 	};
 
 	/* Get the MAC address from Etud */
-	response_t *resp = askEtud("GETMAC");
-	if( response->status >= OKAY && response->status <= TIMEOUT_DATA ) {
-		printf("%s\n", response->data[i]);
-		strncpy(macaddr, response->data[i], 17);
+	resp = askEtud("GETMAC");
+	if( resp->status >= OKAY && resp->status <= TIMEOUT_DATA ) {
+		printf("%s\n", resp->data[0]);
+		strncpy(macaddr, resp->data[0], 17);
 	}
 
 	srand(time(NULL));
