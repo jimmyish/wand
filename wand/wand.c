@@ -269,11 +269,11 @@ int main(int argc,char **argv)
 
 	/* Get the MAC address from Etud */
 	resp = askEtud("GETMAC");
-	print_response(resp, stdout);
 	if( resp->status >= OKAY && resp->status <= TIMEOUT_DATA ) {
-		printf("%s\n", resp->data[0]+7);
 		strncpy(macaddr, resp->data[0]+7, 17);
 	}
+	delete_response( resp );
+  free( resp );
 
 	srand(time(NULL));
 	
