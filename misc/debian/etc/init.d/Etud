@@ -11,6 +11,7 @@ PIDFILE=/var/run/Etud.pid
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/local/sbin/Etud
 ARGS="-f $ETUDCONF -p $PIDFILE"
+IFADDR="wan0"
 NAME=Etud
 DESC="EtherneT over Udp Daemon"
 IP=/bin/ip
@@ -36,11 +37,13 @@ case "$1" in
 
 	echo  "Starting $DESC: $NAME"
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
-
+	
+	ifup ${IFADDR}
 	echo "."
 	;;
   stop)
 	echo -n "Stopping $DESC: $NAME "
+	ifdown ${IFADDR}
 	start-stop-daemon --stop --quiet --pidfile $PIDFILE  \
 		--exec $DAEMON -- $ARGS
 	echo "."
@@ -66,11 +69,12 @@ case "$1" in
 	#
 
 	echo -n "Restarting $DESC: $NAME"
+	ifdown ${IFADDR}
 	start-stop-daemon --stop --quiet --pidfile \
 		$PIDFILE --exec $DAEMON -- $ARGS
 	sleep 1
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
-
+	ifup ${IFADDR}
 	echo "."
 	;;
   *)

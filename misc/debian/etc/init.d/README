@@ -1,0 +1,30 @@
+* Tue Dec  3 00:07:38 NZDT 2002
+  Daniel Lawson <daniel@meta.net.nz>
+
+  wand and Etud init scripts now work with the new HEAD code only.
+
+  Etud runs 'ifup ${IFADDR}' and 'ifdown ${IFADDR}' at appropriate times.
+  this assumes a few things:
+
+  $IFADDR is set in the init script itself, to the interface of the Etud
+  device (wan0 by default). 
+
+  there is an entry in /etc/network/interfaces for wan0, looking similar
+  to:
+
+  noauto wan0
+  iface wan0 inet static
+      address 192.168.66.1
+      netmask 255.255.0.0
+      network 192.168.0.0
+      broadcast 192.168.255.255
+      mtu 1280
+  
+
+  This means you can just call 'ifdown wan0' or 'ifup wan0' and it configures
+  the device for you. 
+
+  This is all very debian specific for now. Redhat scripts to come. Talk
+  to greig.
+
+
