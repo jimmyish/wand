@@ -21,9 +21,7 @@
  *                    devices
  */
  
-#ifndef LINUX
 #include <sys/types.h>
-#endif LINUX
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
