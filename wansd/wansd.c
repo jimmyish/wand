@@ -125,8 +125,8 @@ void sendupdate(int fd,struct tMapping *target)
       entry=entry2;
     }
     if (entry) {
-      b+=snprintf(b, (int) (b-buffer+1022), "%s", entry->mac)+1;
-      b+=snprintf(b, (int) (b-buffer+1022), "%s", 
+      b+=snprintf(b, (int) (buffer+1022-b), "%s", entry->mac)+1;
+      b+=snprintf(b, (int) (buffer+1022-b), "%s", 
 		  inet_ntoa(entry->address.sin_addr))+1;
     }
     
