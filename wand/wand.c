@@ -11,15 +11,17 @@
 #include <time.h>
 #include <unistd.h>
 #include "daemons.h"
+#include "protoverlay.h"
 
 static int testspeed = 0;
 
-#define BUFLEN 1024
 void tellEtud(char *msg)
 {
   struct sockaddr_un sockname;
-  char buffer[BUFLEN] = {'\0'};
+  struct timeval timeout;
   int fd=socket(PF_UNIX,SOCK_STREAM,0);
+  response_t *resp = NULL;
+
   if (fd<0) { 
     perror("control socket");
     fprintf(stderr,"Didn't write '%s'",msg);
@@ -38,11 +40,18 @@ void tellEtud(char *msg)
   
   if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
     return;
-  
-  read(fd,buffer,BUFLEN-1);
-  buffer[BUFLEN-1] = '\0';
-  /* We don't do anything with the buffer anyway. oh well */
-  close(fd);
+
+  /* two second timeout between packets today */
+  timeout.tv_usec = 0;
+  timeout.tv_sec = 2;
+
+  if( NULL != (resp = get_response( fd, &timeout )) ) {
+
+    /* We don't do anything with the response anyway. oh well */
+    delete_response( resp );
+    free( resp );
+  }
+  close( fd );
 }
 
 char *getword(char **buffer,int *len)

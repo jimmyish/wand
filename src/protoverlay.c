@@ -233,4 +233,34 @@ void delete_response( response_t *response )
   }
   free( response->data );
   response->data = NULL;
+  response->count = 0;
 }
+
+static char *message[5] = { "Okay", "Error", "Malformed Line",
+			    "Timeout: No Data", "Timeout: Some Data" };
+			
+
+int print_response( response_t *response, FILE *stream )
+{
+  int i = 0;
+  int count = 0;
+  char *s = NULL;
+  if( stream == NULL ) return 0;
+  if( response == NULL ) return fprintf( stream, "response is NULL\n" );
+  if( response->status >= OKAY && response->status <= TIMEOUT_DATA )
+    s = message[response->status];
+  count += fprintf( stream, "response Count: %u, Status: \"%s\" [%i]. Data:\n",
+		    response->count, s, response->status );
+  if( response->data == NULL ) {
+    count += fprintf( stream, "response has no data.\n" );
+    return count;
+  } 
+  for( i = 0; i < response->count; i++ ) {
+    if( response->data[i] != NULL ) {
+      count += fprintf( stream, "\"%s\"\n",  response->data[i] );
+    }
+  }
+  count += fprintf( stream, "End Of Data.\n\n" );
+  return count;
+}
+

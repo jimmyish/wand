@@ -13,6 +13,7 @@
 #include <stdlib.h> /* for malloc */
 #include <unistd.h> /* for getopt, select */
 #include <getopt.h> /* for getopt */
+#include "protoverlay.h"
 
 static int rude = 0;
 
@@ -38,184 +39,16 @@ IP address must be in the format 1.127.255.0, using only . as the delimiter\n\
 	exit(0);
 }              
 
-int original_main( int argc, char **argv )
-{
-	char buf[1024];
-	int size;
-	struct sockaddr_un sockname;
-	int fd=socket(PF_UNIX,SOCK_STREAM,0);
-	if (fd<0) {
-		perror("control socket");
-		return 1;
-	}
-	sockname.sun_family = AF_UNIX;
-	strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
-	if (connect(fd,(const sockaddr *)&sockname,sizeof(sockname))<0) {
-		perror("control connect");
-		close(fd);
-		return -1;
-	}
-	if (write(fd,argv[1],strlen(argv[1]))!=(signed)strlen(argv[1]) || write(fd,"\r\n",2)!=2)
-		return 2;
-	alarm(2);
-	while ((size=read(fd,buf,1024))>1)
-		write(1,buf,size);
-	return 0;
-}
-
-/* Wrapper around select() and read() 
- * select on the given fd for the given timeout period; if the timeout
- * expires, return zero. otherwise, returns the number of bytes
- * written to the given buffer, not more than bufsize. If an error occurs,
- * either terminate execution or return negative.
- * yes, it is possible to read 0 bytes, which will get mistaken for a
- * timeout. Suggestions Welcome.
- */
-int select_on( int fd, char *buffer, int bufsize, struct timeval *timeout )
-{
-	struct timeval *to = NULL;
-	fd_set readfds;
-	int retval = 0;
-
-	if( !buffer || bufsize <= 0 )
-		return -2; /* EStupid */
-
-	/* select() tends to alter timeout, so make a copy of it */
-	if( timeout != NULL ) {
-		if( NULL == ( to = (struct timeval *)malloc( sizeof( struct
-		    timeval ) ) ) ) {
-			fprintf( stderr, "Out of Memory in select_on!\n" );
-			exit( 1 );
-		}
-		memcpy( to, timeout, sizeof( struct timeval ) );
-	}
-
-	FD_ZERO( &readfds );
-	FD_SET( fd, &readfds );
-
-	if( 0 > (retval = select( fd+1, &readfds, NULL, NULL, to ) ) ) {
-		perror("select_on: select");
-		exit( 1 );
-	}
-
-	if( to != NULL ) free( to );
-	if( 0 == retval )
-		return 0;
-
-	if( !FD_ISSET( fd, &readfds ) ) {
-		printf( "fd not set true. Err... I don't want to know what "
-			"went wrong.\n" );
-		return -3;
-	}
-	/* We need our Terminating Null, so grab one less byte than needed
-	 */
-	if( 0 > (retval = read( fd, buffer, bufsize-1 )) ) {
-		perror("select_on: read");
-		exit( 1 );
-	}
-	/* array contains elements in 0 :: retval-1, so set \0 on retval
-	 */
-	buffer[ retval ] = '\0';
-#if 0
-	printf( "select_on(%i, %p, %i, %p) = %i *%s*\n", fd, buffer,
-		bufsize, timeout, retval+1, buffer );
-#endif
-	return retval+1;
-}
-
-/* displays a reply to the screen. Pretty simple/crude 
- * return 0 to continue iterating, or negative to terminate the while.
- */
-int display_reply( char *buffer ) 
-{
-	int size = strlen( buffer );
-	/* Inelegant Hack - remove trailing ctype-ish space */
-	while( size > 1 && 
-	       isspace( buffer[ size-1 ] ) ) {
-		buffer[ size-1 ] = '\0';
-		size--;
-	}
-	
-	if( strlen( buffer ) <= 1 ) {
-		printf("Boring / Blank line from server. no fun.\n");
-		printf( "please strace this program and if you get this"
-		        "message again, send me a copy of the output!\n"
-			" -- Gerard\n" );
-		return 0;
-	}
-
-	if( buffer[0] == '+' ) { /* Continuation */
-		printf( "\"%s\"\n", buffer+1 );
-		return 0;
-	} else if( buffer[0] == '-' ) { /* Last */
-		printf( "'%s'\n", buffer+1 );
-		return -1;
-	} else { /* malformed */
-		printf( "Unexpected reply from server, \"%s\"\n",
-			buffer );
-		return 0;
-	}
-	printf( "Shouldn't get here." );
-	return 0;
-}
-
-/* (wuz)
- * Take a buffer which may end part way through a valid string
- * Output all the complete valid strings and return the number of characters
- * left (N) that are a partial string.
- * DOES alter buffer, ultimately should leave the first N characters
- * as being the partial string, this may result in buffer[0] == '\0'
- * (end wuz)
- */
-int mangle_buffer( char *buffer, int len )
-{
-  char *ptr = buffer;
-  char *prev = buffer;
-  int retval = 0;
-  
-  while( *ptr ) {
-    if( *ptr == '\n' || *ptr == '\r' ) {
-      *ptr = '\0';
-      ptr++;
-      while(*ptr && (*ptr == '\n' || *ptr == '\r' )) {
-	ptr++;
-      }
-      /* so, now prev points to start of last line; and ptr points to
-       * start of next line - parse and iterate
-      */
-      retval = display_reply( prev );
-      if( retval < 0 ) { /* Message finished or error - stop iterating */
-	return retval;
-      }
-      prev = ptr;
-    } else {
-      ptr++;
-    }
-  }
-  retval = 0;
-  if( ptr != prev ) {
-    memmove( buffer, prev, ptr - prev );
-    buffer[ptr-prev] = '\0';
-    retval = ptr - prev;
-  } else {
-    buffer[0] = '\0';
-  }
-  //  printf( "DBG: %p vs %p = %i; $$%s$$\n", prev, ptr, ptr - prev, buffer );
-  return retval;
-}
 
 #define BUFSIZE 512
 int send_request( char *one, char *two, char *three )
 {
   char buffer[BUFSIZE+1];
-  char *p = buffer;
-  int size = 0;
-  int last = 0;
-  int retval = 0;
   struct sockaddr_un sockname;
   struct timeval timeout;
   int fd = socket(PF_UNIX,SOCK_STREAM,0);
-  
+  response_t *resp = NULL;
+
   if( fd < 0 ) {
     perror("control socket");
     return 1;
@@ -230,7 +63,7 @@ int send_request( char *one, char *two, char *three )
     return -1;
   }
   
-  snprintf( buffer, 512, "%s %s %s\n\r", one, (two)?two:"",
+  snprintf( buffer, BUFSIZE, "%s %s %s\n\r", one, (two)?two:"",
 	    (three)?three:"" );
   if( write(fd,buffer,strlen(buffer)) != (signed)strlen(buffer) )
     return 2;
@@ -245,28 +78,16 @@ int send_request( char *one, char *two, char *three )
   /* two second timeout between packets today */
   timeout.tv_usec = 0;
   timeout.tv_sec = 2;
-  
-  p = buffer;
-  while( ( size = select_on( fd, p, BUFSIZE-last, &timeout) ) > 0 ) {
-    
-    retval = mangle_buffer( buffer, last + size );
-    if( retval < 0 ) {
-      close( fd );
-      return 0;
-    }
-    /* Need more than 2 bytes to store next reply
-     * BUFSIZE value = Design decision really.
-     */
-    if( BUFSIZE - retval < 2 ) {
-      fprintf( stderr, "Insufficient buffer space / reply from server too long"
-	       " in send_request(). Buffer: %u\n", BUFSIZE );
-      exit( 1 );
-    }
-    last = retval; /* Typically 0 */
-    p = &buffer[ last ];
+
+  if( NULL == (resp = get_response( fd, &timeout )) ) {
+    close( fd );
+    return 1;
   }
-  if( last != 0 )
-    mangle_buffer( buffer, last );
+
+  print_response( resp, stdout );
+  delete_response( resp );
+  free( resp );
+
   close( fd );
   return 0;
 }
