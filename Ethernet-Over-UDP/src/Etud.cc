@@ -37,8 +37,11 @@ int load_module(char *filename)
 int main(int arvc,char **argv)
 {
 	char *module=NULL;
+	int do_daemonise=1;
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
+		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
+		{ NULL, 0, NULL }
 	};
 	if (parse_config(main_config,"/usr/local/etc/wand.conf")) {
 	  logger(MOD_INIT,1,"Bad Config file, giving up\n");
@@ -68,12 +71,15 @@ int main(int arvc,char **argv)
 	logger(MOD_INIT, 6, "Using interface driver: %s\n", driver->name);
 	logger(MOD_INIT, 6, " version: %s\n", driver->version);
 
-	/* Lets go to the background */
-	logger(MOD_INIT, 7, "Attempting to Daemonise...\n");
-	daemonise(argv[0]);
-	put_pid("Etud");
+	if (do_daemonise) {
+		/* Lets go to the background */
+		logger(MOD_INIT, 7, "Attempting to Daemonise...\n");
 
-	logger(MOD_INIT, 7, "Daemonised\n");
-	
+		daemonise(argv[0]);
+		put_pid("Etud");
+		logger(MOD_INIT, 7, "Daemonised\n");
+	}
+
+	logger(MOD_INIT, 8, "Init complete\n");
 	mainloop();
 }
