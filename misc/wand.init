@@ -1,0 +1,35 @@
+#! /bin/sh
+#
+# wand		Wide Area Networking Daemon
+#		Program to provide cooperative communities of networks on
+#		the Internet.
+#
+#
+# Version:	$Id$
+#
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/local/sbin/wand_startup.sh
+NAME="wand"
+DESC="Internet Network Community"
+
+test -x $DAEMON || exit 0
+
+set -e
+
+case "$1" in
+  start)
+	echo -n "Starting $DESC: "
+	/usr/local/sbin/wand_starup.sh
+	echo "$NAME."
+	;;
+  stop)
+	echo -n "Stopping $DESC: "
+	killall wansd
+	killall wand
+	killall Etud
+	ifconfig tap0 down
+	;;
+esac
+
+exit 0
