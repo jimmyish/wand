@@ -22,6 +22,7 @@
 #include "driver.h"
 #include "mainloop.h"
 #include "debug.h"
+#include "etud.h"
 
 void ui_process_callback(int fd)
 {
@@ -98,9 +99,17 @@ void ui_process_callback(int fd)
 		return;
 	}
 
+	/* "GETMAC" */
+	else if (strcasecmp("getmac",buffer) ==0) {
+		char tbuff[80];
+		sprintf(tbuff,"+GETMAC %s\r\n", macaddr);
+		ui_send(fd, tbuff);
+		ui_send(fd, "-OK\r\n");
+	}
+
 	/* "LIST" */
 	else if (strcasecmp("list",buffer) == 0) {
-		char buffer[80];
+		char tbuff[80];
 		ui_send(fd,"+LIST ethernet\tip\r\n");
 		for (online_t::const_iterator i=online.begin();
 		     i!=online.end();
@@ -108,10 +117,10 @@ void ui_process_callback(int fd)
 		{
 			struct sockaddr_in sockaddr;
 			sockaddr.sin_addr.s_addr=i->second;
-			sprintf(buffer,"+LIST %s\t%s\r\n",
+			sprintf(tbuff,"+LIST %s\t%s\r\n",
 				i->first(),
 				inet_ntoa(sockaddr.sin_addr));
-			ui_send(fd,buffer);
+			ui_send(fd,tbuff);
 		}
 		ui_send(fd,"-OK\r\n");
 		return;

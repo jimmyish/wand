@@ -26,6 +26,7 @@
 #include "config.h"
 
 extern int modtolevel[];
+char *macaddr=NULL;
 
 int load_module(char *filename)
 {
@@ -48,6 +49,7 @@ int main(int argc,char **argv)
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
+		{ "macaddr", TYPE_STR|TYPE_NULL, &macaddr },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
@@ -57,10 +59,13 @@ int main(int argc,char **argv)
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "f:p:")) != -1){
-		switch(ch){	
+	while((ch = getopt(argc, argv, "f:m:p:")) != -1){
+	switch(ch){	
 			case 'f':
 				conffile = strdup(optarg);
+				break;
+			case 'm':
+				macaddr = strdup(optarg);
 				break;
 			case 'p':
 				pidfile = strdup(optarg);
