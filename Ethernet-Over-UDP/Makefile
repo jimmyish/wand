@@ -1,5 +1,5 @@
-CFLAGS=-Iinclude/ -I../include/ -g -Wall -O3
-CXXFLAGS=-Iinclude/ -I../include/ -g -Wall -O3 #-DINSANE_LIST_DEBUG
+CFLAGS=-Iinclude/ -I../include/ -g -Wall 
+CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG
 
 all: Etud drivers/ethertap.so test
 
