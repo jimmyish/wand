@@ -214,6 +214,20 @@ void doPacket(char *packet,int len)
   clearOldEntries();
 }
 
+void usage(void) {
+	printf("%s: -i server 
+					[-c controlfile] - Specify the Etud control file
+					[-D]						 - Don't daemonise
+					[-f configfile]	 - Read config from this file
+					[-h]						 - This help
+					[-i server]			 - Specify the wansd server 
+					[-l port]				 - Communicate on the specified port
+					[-p pidfile] 		 - File to store pid in
+					Options on command line override those in the config
+					file.					
+					\n", argv[0]);
+}
+
 int main(int argc,char **argv)
 {
 	int sock = socket(PF_INET, SOCK_DGRAM, 0);
@@ -226,28 +240,35 @@ int main(int argc,char **argv)
 	struct sockaddr_in serveraddr;
 	struct timeval tm;
 	struct hostent *host = NULL;
+	response_t *resp;
 	char *pidfile = "wand";
 	char macaddr[18];
 	char ch;
-	response_t *resp;
+	
 	char cfgfile[1024];
+	int do_daemonise=1;
+	int cdo_daemonise=-1;
 	
 	// Set defaults
 	strcpy(control_file_path,"/var/run/Etud.ctrl");
 	macaddr[0] = '\0';
 	
 	// Parse command line arguments
-	while((ch = getopt(argc, argv, "c:f:h:i:p:")) != -1){
+	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
 	  switch(ch)
 	    {	
 			case 'c':
 				strncpy(control_file_path, optarg, 1024);
 				break;
+			case 'D':
+				cdo_daemonise=0;
+				break;
 			case 'f':
 				strncpy(cfgfile, optarg, 1024);
 				break;
 			case 'h':
-				fprintf(stderr, "%s: -i server [-c controlfile] [-p pidfile] [-f configfile]\n", argv[0]);
+				usage();
+				return 0;
 				break;
 			case 'i':
 				host = gethostbyname(optarg);
@@ -256,6 +277,8 @@ int main(int argc,char **argv)
 					return 1;
 				}
 				break;
+			case 'l':
+				
 			case 'p':
 				pidfile = strdup(optarg);
 				break;
@@ -297,7 +320,7 @@ int main(int argc,char **argv)
 	tm.tv_sec=0;
 	tm.tv_usec=0;
 	for (;;) {
-	  	int addrlen = sizeof(address);
+	  int addrlen = sizeof(address);
 		char buffer[65536];
 		int len;
 		fd_set rfds;

@@ -39,46 +39,83 @@ int load_module(char *filename)
 	return 1;
 }
 
+void usage(void) {
+	printf("%s: [-d module] 		 - Transport driver to use
+							[-D]						 - Don't daemonise
+							[-f configfile]	 - Read config from this file
+							[-h]						 - This help
+							[-i ifname]			 - Name of the interface to create 
+							[-l port]				 - Communicate on the specified port
+							[-m macaddr]		 - MAC address for the created interface
+							[-p pidfile] 		 - File to store pid in
+							Options on command line override those in the config
+							file.					
+							\n", argv[0]);
+
+}
+
 int main(int argc,char **argv)
 {
+	/* Actual configuration options */
 	int do_daemonise=1;
 	char *module=NULL;
 	char *conffile=NULL;
 	char *pidfile="Etud";
-	char *cmacaddr=NULL;
 	
+	/* Temporary options read from the command line */
+	char *cmacaddr=NULL;
+	char *cmodule=NULL;
+	char *cpidfile=NULL;
+	int cdo_daemonise=1;
+	int cudp_port=-1;
+	
+	/* Possible config file options */
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
 		{ "macaddr", TYPE_STR|TYPE_NULL, &macaddr },
 		{ "ifname", TYPE_STR|TYPE_NULL, &ifname },
 		{ "pidfile", TYPE_STR|TYPE_NULL, &pidfile },
+		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
-		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ NULL, 0, NULL }
 	};
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "f:i:m:p:")) != -1){
+	while((ch = getopt(argc, argv, "dDf:hi:l:m:p:")) != -1){
 	switch(ch){	
+			case 'd':
+				cmodule = strdup(optarg);
+				break;
+			case 'D':
+				cdo_daemonise=0;
+				break;
 			case 'f':
 				conffile = strdup(optarg);
 				break;
+			case 'h':
+				usage();
+				return 0;
+				break;
 			case 'i':
 				ifname = strdup(optarg);
+				break;
+			case 'l':
+				cudpport = atoi(optarg);
 				break;
 			case 'm':
 				cmacaddr = strdup(optarg);
 				break;
 			case 'p':
-				pidfile = strdup(optarg);
+				cpidfile = strdup(optarg);
 				break;
 		}
 	}
 
+	/* Parse the config file */
 	if (conffile != NULL) {
 	  	logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
 	  	if (parse_config(main_config,conffile)) {
@@ -92,10 +129,20 @@ int main(int argc,char **argv)
 			return 1;
 	  	}
 	}
-
+	
+	/* Override the config file with any values specified on command line */
 	if (cmacaddr != NULL)
 		macaddr = strdup(cmacaddr);
+	if (cmodule != NULL)
+		module = strdup(cmodule);
+	if (cpidfile != NULL) 
+		pidfile = strdup(cpidfile);
+	if (cdo_daemonise == 0)
+		do_daemonise = 0;
+	if (cudp_port != -1)
+		udp_port = cudp_port;
 		
+	/* Check that a MAC address has been specified */
 	if (macaddr == NULL) {
 		logger(MOD_INIT, 1, "No MAC Address specified!\n");
 		return 1;
