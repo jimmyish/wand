@@ -1,0 +1,48 @@
+UI Protocol Thoughts.
+
+Suggested commandline options for client binary
+===
+client [-h] 
+client [-a mac ip ] 
+client [-d mac] 
+       [-l] 
+       [-v] 
+       [-c]
+
+===
+Suggested parsing approach
+{
+getopt( ... "hlvcad" )
+mac = argv[2], ip = argv[3]
+}
+ie, getopts feels no options have arguments and thusly filters mac and ip
+values to argv[2+]...
+NOT posix getopt compatible
+NOT going to like people trying to say -a AND -d
+must code getopt switch to disallow this. :)
+
+===
+
+Example exchanges from client to etud
+
+< = to etud
+> = from etud
+
+list exchange:
+< LIST 
+> +LIST ethernet ip
+> +LIST 00:01:02:03:04:05 1.2.3.4
+> -OK
+
+add exchange:
+< ADD 00:01:02:03:04:05 1.2.3.4
+> -OK
+
+del exchange:
+< DEL 00:01:02:03:04:05
+> -ERR
+
+===
+EOF. I guess.
+$Id$
+===
