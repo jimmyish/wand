@@ -29,6 +29,7 @@
 static void m_add(int fd,char **argv,int argc)
 {
 	sockaddr_in addr;
+	addr.sin_family = AF_INET;
 	
 	if (argc<2) {
 		ui_send(fd,"-ERR Not enough parameters\r\n");
