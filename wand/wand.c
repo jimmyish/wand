@@ -15,6 +15,7 @@
 #include "daemons.h"
 #include "protoverlay.h"
 #include "config.h"
+#include "debug.h"
 
 char control_file_path[1024];
 
@@ -296,12 +297,18 @@ int main(int argc,char **argv)
 	}
 
 	if(parse_config(main_config, conffile))
+	{
+		logger( MOD_INIT, 3, "Error parsing config file: %s\n", conffile);
 		return 1;
+	}
 	
-	host = gethostbyname(server);
+	// host = gethostbyname(server);
 
 	if(!host)
+	{
+		logger( MOD_INIT, 3, "Cannot resolve hostname\n");
 		return 1;
+	}
 	
 	if (sock<0) {
 		perror("socket");
