@@ -27,6 +27,7 @@ bool rem_ip(ether_t ether)
 {
 	if (online.find(ether)==online.end())
 		return false;
+	online.erase(ether);
 	return true;
 }
 

@@ -55,8 +55,6 @@ class ether_t {
 			for (int i=0;i<6;i++)
 				if (address[i]<b.address[i])
 					return true;
-				else if (address[i]<b.address[i])
-					return true;
 			return false;
 		};
 		ether_t operator =(const ether_t &b) {
