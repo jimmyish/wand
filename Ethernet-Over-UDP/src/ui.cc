@@ -92,7 +92,6 @@ static void m_getmac(int fd,char **argv,int argc)
 	sprintf(tbuff,"+GETMAC %s\r\n", macaddr);
 	ui_send(fd, tbuff);
 	ui_send(fd, "-OK\r\n");
-	printf("-OK\r\n");
 
 }
 
