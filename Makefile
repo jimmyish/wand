@@ -38,7 +38,7 @@ install: all
 		/usr/local/etc/wand.$$(hostname).conf.original
 	install -D --group=root --mode=644 --owner=root \
 		misc/sample/etud.conf \
-		/usr/local/etc/etud.conf
+		/usr/local/etc/etud.conf.sample
 	install -D --group=root --mode=555 --owner=root \
 		clientsrc/client \
 		/usr/local/sbin/Etudctl
