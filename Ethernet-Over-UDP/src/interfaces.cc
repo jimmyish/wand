@@ -104,8 +104,23 @@ int init_interface(void)
 		logger(MOD_IF, 1, "Socket Set MAC Address failed - %m\n");
 		return -1;
 	}
+  
 	/* Set ARP and MULTICAST on the interface */
-	
+  /* Read the current flags on the interface */
+  if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
+    logger(MOD_IF, 1, "Get Flags failed on device - %m\n");
+    return -1;
+  }
+  /* remove the NOARP, set the MULTICAST flags */
+  ifr.ifr_flags &= ~IFF_NOARP;
+  ifr.ifr_flags != IFF_MULTICAST;
+  
+  /* commit changes */
+  if (ioctl(skfd, SIOCSIFFLAGS, &ifr) < 0) {
+    logger(MOD_IF, 1, "Set Flags failed on device - %m\n");
+    return -1;
+  }
+  
   /* Set MTU on the interface  */
   ifr.ifr_mtu = mtu; 
   if(ioctl(skfd, SIOCSIFMTU, &ifr) < 0) {
