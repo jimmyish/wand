@@ -1,1 +1,2 @@
-*/10 * * * * root  pidof wansd || /usr/local/sbin/wansd
+MAILTO=""
+0,10,20,30,40,50 * * * * root  killall -0 wansd || /etc/init.d/wansd restart
