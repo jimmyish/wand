@@ -71,7 +71,7 @@ void daemonise(char *name)
 	open("/dev/console",O_WRONLY);
 	daemonised = 1;
 
-	name = strrchr(name,'/') ? strrchr(name,'/') : name;
+	name = strrchr(name,'/') ? strrchr(name,'/') + 1 : name;
 	
 	openlog(name, LOG_PID, LOG_DAEMON);
 }	
