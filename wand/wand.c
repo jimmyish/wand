@@ -17,7 +17,7 @@
 #include "config.h"
 #include "debug.h"
 
-char control_file_path[1024];
+char *control_file_path = 0;
 
 void tellEtud(char *msg)
 {
@@ -244,25 +244,25 @@ int main(int argc,char **argv)
 	struct hostent *host = NULL;
 	response_t *resp;
 	char *pidfile = "wand";
-	char macaddr[18];
-	char server[255];
+	char *macaddr = 0;
+	char *server = 0;
 	char ch;
 	
-	char conffile[1024];
+	char *conffile = 0;
 	int do_daemonise=1;
 	int cdo_daemonise=-1;
 	
 	config_t main_config[] = {
 		{"server", TYPE_STR|TYPE_NULL, &server},
 		{"controlfile", TYPE_STR|TYPE_NULL, &control_file_path},
-		{"daemonise", TYPE_STR|TYPE_NULL, &do_daemonise},
+		{"daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise},
 		{NULL, 0, NULL}
 	};
 
 	// Set defaults
-	strcpy(conffile, "/usr/local/etc/wand.conf");
-	strcpy(control_file_path,"/var/run/Etud.ctrl");
-	macaddr[0] = '\0';
+	conffile = strdup("/usr/local/etc/wand.conf");
+	control_file_path = strdup("/var/run/Etud.ctrl");
+	/*macaddr[0] = '\0';*/
 		
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
