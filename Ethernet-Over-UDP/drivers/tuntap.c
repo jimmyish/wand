@@ -34,7 +34,7 @@
 static char tapdevname[32];
 static int fd = -1;
 
-static int tuntap_setup(unsigned long myid) {
+static int tuntap_setup() {
 
         struct ifreq ifr;
 	int skfd;        
@@ -45,7 +45,7 @@ static int tuntap_setup(unsigned long myid) {
                 exit(1);
         }
         */
-	printf("tuntap_setup (%lu) entered...\n", myid);
+	printf("tuntap_setup () entered...\n");
 	
 	fd = 0;
 

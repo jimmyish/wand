@@ -2,7 +2,7 @@ CFLAGS=-Iinclude/ -I../include/ -g -Wall
 CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG 
 LDFLAGS=-L../lib
 
-all: Etud drivers/ethertap.so test
+all: Etud drivers/ethertap.so drivers/tuntap.so test
 
 Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
 	src/mainloop.o ../lib/daemons.o ../lib/debug.o
@@ -13,6 +13,8 @@ test: src/list-test
 	src/list-test 
 
 drivers/ethertap.so: drivers/ethertap.c
+
+drivers/tuntap.so: drivers/tuntap.c
 
 include/ethertap_cfg.h:
 	cp include/ethertap_cfg.h.sample include/ethertap_cfg.h
