@@ -171,14 +171,14 @@ int main(int argc,char **argv)
 		logger(MOD_INIT, 1, "No MAC Address specified!\n");
 		return 1;
 	}
+	/* Check that ifname is set */
+	if (ifname == NULL) {
+		ifname = strdup("wan0");
+	}
 	/* Check that a control file has been specified */
 	if (ctrlfile == NULL) {
 		sprintf(buf, "/var/run/Etud.%s.ctrl", ifname);
 		ctrlfile = strdup(buf);
-	}
-	/* Check that ifname is set */
-	if (ifname == NULL) {
-		ifname = strdup("wan0");
 	}
 	
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
