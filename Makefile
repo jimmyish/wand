@@ -41,7 +41,10 @@ install: all
 	@echo -n Installing sample configuration...
 	@install -D --group=root --mode=644 --owner=root \
 		wand.conf.original \
-		/usr/local/etc/wand.$$(hostname).conf.original && echo Done
+		/usr/local/etc/wand.$$(hostname).conf.original
+	@install -D --group=root --mode=644 --owner=root \
+		misc/sample/etud.conf \
+		/usr/local/etc/etud.conf && echo Done
 	@echo -n Installing client program...
 	@install -D --group=root --mode=555 --owner=root \
 		clientsrc/client \
