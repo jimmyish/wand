@@ -75,6 +75,9 @@ void daemonise(char *name)
 	rv = open("/dev/null",O_RDONLY);
 	assert(rv == 0);
 	rv = open("/dev/console",O_WRONLY);
+	if (rv == -1) {
+		rv=open("/dev/null",O_WRONLY);
+	}
 	assert(rv == 1);
 	rv = dup(rv);
 	assert(rv == 2);
