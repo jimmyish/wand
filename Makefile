@@ -2,11 +2,13 @@ SUBDIR=lib Ethernet-Over-UDP clientsrc wand wansd
 CFLAGS=-Iinclude/ -g -Wall -O3
 CXXFLAGS=-Iinclude/ -g -Wall -O3
 
-# Check that the Base Directory is set
-BASEDIR ?= 
-# Check that install paths relative to the base directory are set
-BINDIR ?= /usr/local
+# Check that the install paths have been specified
+DESTDIR ?= 
+
+BINDIR ?= /usr/local/sbin
+LIBDIR ?= /usr/local/lib
 CONFDIR ?= /usr/local/etc
+INITDIR ?= $(DESTDIR)/etc/init.d
 
 all: 
 	for i in $(SUBDIR); do \
@@ -23,50 +25,50 @@ clean:
 install: all
 	install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/Etud \
-		$(BASEDIR)$(BINDIR)/sbin/Etud
+		$(DESTDIR)$(BINDIR)/Etud
 	install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/drivers/ethertap.so \
-		$(BASEDIR)$(BINDIR)/lib/wand/drivers/ethertap.so
+		$(DESTDIR)$(LIBDIR)/wand/drivers/ethertap.so
 	install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/drivers/tuntap.so \
-		$(BASEDIR)$(BINDIR)/lib/wand/drivers/tuntap.so
+		$(DESTDIR)$(LIBDIR)/wand/drivers/tuntap.so
 	install -D --group=root --mode=555 --owner=root \
 		wand/wand \
-		$(BASEDIR)$(BINDIR)/sbin/wand
+		$(DESTDIR)$(BINDIR)/wand
 	install -D --group=root --mode=555 --owner=root \
 		wansd/wansd \
-		$(BASEDIR)$(BINDIR)/sbin/wansd
+		$(DESTDIR)$(BINDIR)/wansd
 	install -D --group=root --mode=644 --owner=root \
 		misc/sample/etud.conf \
-		$(BASEDIR)$(CONFDIR)/etud.conf.sample
+		$(DESTDIR)$(CONFDIR)/etud.conf.sample
 	install -D --group=root --mode=644 --owner=root \
 		misc/sample/wand.conf \
-		$(BASEDIR)$(CONFDIR)/wand.conf.sample
+		$(DESTDIR)$(CONFDIR)/wand.conf.sample
 	install -D --group=root --mode=555 --owner=root \
 		clientsrc/client \
-		$(BASEDIR)$(BINDIR)/sbin/Etudctl
+		$(DESTDIR)$(BINDIR)/Etudctl
 
 install-debian:
 	install -D --group=root --mode=555 --owner=root \
 		misc/debian/etc/init.d/Etud \
-		$(BASEDIR)/etc/init.d/Etud
+		$(INITDIR)/Etud
 	install -D --group=root --mode=555 --owner=root \
                 misc/debian/etc/init.d/wand \
-                $(BASEDIR)/etc/init.d/wand
+                $(INITDIR)/wand
 	install -D --group=root --mode=555 --owner=root \
                 misc/debian/etc/init.d/wansd \
-                $(BASEDIR)/etc/init.d/wansd
-	sed -e "s@^ETUDCONF=.*@ETUDCONF=$(BASEDIR)$(CONFDIR)/etud.conf@" \
-	    -e "s@^DAEMON=.*@DAEMON=$(BASEDIR)$(BINDIR)/sbin/Etud@" \
-	    < $(BASEDIR)/etc/init.d/Etud > $(BASEDIR)/etc/init.d/Etud.tmp
-	mv $(BASEDIR)/etc/init.d/Etud.tmp $(BASEDIR)/etc/init.d/Etud
-	chmod 555 $(BASEDIR)/etc/init.d/Etud
-	sed -e "s@^WAND_CONF=.*@WAND_CONF=$(BASEDIR)$(CONFDIR)/wand.conf@" \
-	    -e "s@^DAEMON=.*@DAEMON=$(BASEDIR)$(BINDIR)/sbin/wand@" \
-            < $(BASEDIR)/etc/init.d/wand > $(BASEDIR)/etc/init.d/wand.tmp
-	mv $(BASEDIR)/etc/init.d/wand.tmp $(BASEDIR)/etc/init.d/wand
-	chmod 555 $(BASEDIR)/etc/init.d/wand
-	sed -e "s@^DAEMON=.*@DAEMON=$(BASEDIR)$(BINDIR)/sbin/wansd@" \
-            < $(BASEDIR)/etc/init.d/wansd > $(BASEDIR)/etc/init.d/wansd.tmp
-	mv $(BASEDIR)/etc/init.d/wansd.tmp $(BASEDIR)/etc/init.d/wansd
-	chmod 555 $(BASEDIR)/etc/init.d/wansd
+                $(INITDIR)/wansd
+	sed -e "s@^ETUDCONF=.*@ETUDCONF=$(CONFDIR)/etud.conf@" \
+	    -e "s@^DAEMON=.*@DAEMON=$(BINDIR)/Etud@" \
+	    < $(INITDIR)/Etud > $(INITDIR)/Etud.tmp
+	mv $(INITDIR)/Etud.tmp $(INITDIR)/Etud
+	chmod 555 $(INITDIR)/Etud
+	sed -e "s@^WAND_CONF=.*@WAND_CONF=$(CONFDIR)/wand.conf@" \
+	    -e "s@^DAEMON=.*@DAEMON=$(BINDIR)/wand@" \
+            < $(INITDIR)/wand > $(INITDIR)/wand.tmp
+	mv $(INITDIR)/wand.tmp $(INITDIR)/wand
+	chmod 555 $(INITDIR)/wand
+	sed -e "s@^DAEMON=.*@DAEMON=$(BINDIR)/wansd@" \
+            < $(INITDIR)/wansd > $(INITDIR)/wansd.tmp
+	mv $(INITDIR)/wansd.tmp $(INITDIR)/wansd
+	chmod 555 $(INITDIR)/wansd
