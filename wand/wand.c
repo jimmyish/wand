@@ -12,32 +12,37 @@
 #include <unistd.h>
 #include "../Ethernet-Over-UDP/include/daemons.h"
 
+static int testspeed = 0;
+
+#define BUFLEN 1024
 void tellEtud(char *msg)
 {
   struct sockaddr_un sockname;
-  char buffer[1024];
+  char buffer[BUFLEN] = {'\0'};
   int fd=socket(PF_UNIX,SOCK_STREAM,0);
   if (fd<0) { 
     perror("control socket");
     fprintf(stderr,"Didn't write '%s'",msg);
     return;
- } 
-
- sockname.sun_family = AF_UNIX;
- strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
-
- if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
-   perror("control connect(/var/run/Etud.ctrl)"); 
-   fprintf(stderr,"Didn't write '%s'",msg);
-   close(fd); 
-   return;
- }
-
- if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
-   return;
- 
- read(fd,buffer,strlen(buffer));
- close(fd);
+  } 
+  
+  sockname.sun_family = AF_UNIX;
+  strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
+  
+  if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
+    perror("control connect(/var/run/Etud.ctrl)"); 
+    fprintf(stderr,"Didn't write '%s'",msg);
+    close(fd); 
+    return;
+  }
+  
+  if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
+    return;
+  
+  read(fd,buffer,BUFLEN-1);
+  buffer[BUFLEN-1] = '\0';
+  /* We don't do anything with the buffer anyway. oh well */
+  close(fd);
 }
 
 char *getword(char **buffer,int *len)
@@ -86,6 +91,10 @@ int main(int argc,char **argv)
 		return 1;
 	};
 
+	if( argc >= 3 && 0 == strcmp(argv[2],"test" )) {
+	  fprintf( stderr, "TestSpeed on, will update faster\n" );
+	  testspeed++;
+	}
 	srand(time(NULL));
 	
 	address.sin_family = AF_INET;
@@ -112,14 +121,18 @@ int main(int argc,char **argv)
 		char buffer[65536];
 		int len;
 		fd_set rfds;
-		
+		tm.tv_usec = 0;
 		if (tm.tv_sec<1) {
 		  if (flag) {
 		    tm.tv_sec=30;
 		  }
 		  else 
 		  {
-		    tm.tv_sec=300+rand()%600;
+		    if( testspeed == 0 ) {
+		      tm.tv_sec=300+rand()%600;
+		    } else {
+		      tm.tv_sec=60+rand()%60;
+		    }
 		  }
 		  flag=1;
 		  sendto(sock,argv[2],strlen(argv[2])+1,0,
