@@ -1,5 +1,9 @@
+# This is a test option
  foo 1
+
+# This tests strings
 baz "Hello World!"
 
+# This tests boolean
 boing on
 

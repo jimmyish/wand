@@ -16,6 +16,7 @@ on		{ return TOK_TRUE; }
 [A-Za-z0-9]+	{ yylval.str=(char*)strdup(yytext); return TOK_IDENTIFIER; }
 \n		{ return TOK_EOL; }
 [[:blank:]]	{ return TOK_WHITE; }
+#.*\n		{ return TOK_WHITE; }
 .		{ return TOK_UNKNOWN; }
 
 %%
