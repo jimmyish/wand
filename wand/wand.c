@@ -292,7 +292,7 @@ int main(int argc,char **argv)
 	}
 	
 	daemonise(argv[0]);
-	put_pid("wand");
+	put_pid(pidfile);
 	
 	tm.tv_sec=0;
 	tm.tv_usec=0;
