@@ -72,6 +72,7 @@ void logger(int module, int level, const char *format, ...);
 #define MOD_IPC 4	/* wand <-> etud IPC control */
 #define MOD_NETWORK 5	/* Anything related to the networking code */
 #define MOD_IF 6	/* Anything related to the interfaces code */
+#define MOD_LIST 7	/* All the stuff to do with etud's list code */
 
 #ifdef __cplusplus
 }

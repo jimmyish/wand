@@ -25,7 +25,7 @@ static int loglookup[]={LOG_ALERT, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
  * really really wants to set these higher !
  */
 
-int modtolevel[]= {15, 15, 15, 15, 15, 15, 7, 15};
+int modtolevel[]= {15, 15, 15, 15, 15, 15, 15, 7};
 
 extern int daemonised;
 
