@@ -17,15 +17,25 @@
 
 #include "list.h"
 #include "ui.h"
-#include "mainloop.h"
 #include "driver.h"
+#include "mainloop.h"
+
+/* This flag is vewwy important. it is used to indicate we are trying to
+ * write to a socket and would appreciate any signals being caught, not
+ * killing us off.
+ * No idea what signals to catch. try mainloop.cc
+ */
+extern volatile int isWriting;
 
 void ui_process_callback(int fd)
 {
 	char buffer[1024];
 	int len;
 	len=read(fd,buffer,sizeof(buffer));
-	if (len==0) {
+	if( len < 0 ) {
+		perror("callback:read");
+		return;
+	} else if( len==0 ) {
 		remRead(fd);
 		close(fd);
 		return;
@@ -121,11 +131,33 @@ void ui_process_callback(int fd)
 	return;
 }
 
+/* We would really like to catch any signals thrown in here
+ */
+int internal_send( int sock, char *msg, int msglen )
+{
+	int retval = 0;
+	isWriting = 1;
+	if( 0 > (retval = write(sock,msg,msglen) ) ) {
+		perror( "send:write" );
+		isWriting = 0;
+		return retval;
+	}
+
+	isWriting = 0;
+	return retval;
+}
+
 int ui_send(int sock,char *msg)
 {
-	if (write(sock,msg,strlen(msg))!=(int)strlen(msg))
+	if( internal_send( sock, msg, strlen(msg) ) != (int)strlen(msg) )
 		return -1;
-	return (write(sock,"\r\n",2)==2) ? 0 : -1;
+	if( internal_send( sock, "\r\n", 2 ) != 2 )
+#if 1 /* Ignore errors from writing "\r\n" */
+		return 0;
+#else
+		return -1;
+#endif
+	return 0;
 }
 
 static void ui_callback(int fd)
