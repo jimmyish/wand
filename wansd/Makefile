@@ -1,7 +1,7 @@
-CFLAGS=-g -Wall
+CFLAGS=-g -Wall -I../include/
 
 all: wansd
 
 clean:
 	rm -f wansd
-wansd: wansd.c ../Ethernet-Over-UDP/src/daemons.o
+wansd: wansd.c ../lib/daemons.o

@@ -1,10 +1,10 @@
-CFLAGS=-Iinclude/ -g -Wall -O3
-CXXFLAGS=-Iinclude/ -g -Wall -O3 #-DINSANE_LIST_DEBUG
+CFLAGS=-Iinclude/ -I../include/ -g -Wall -O3
+CXXFLAGS=-Iinclude/ -I../include/ -g -Wall -O3 #-DINSANE_LIST_DEBUG
 
 all: Etud drivers/ethertap.so test
 
 Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
-	src/mainloop.o src/daemons.o 
+	src/mainloop.o ../lib/daemons.o 
 	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -o Etud
 
 test: src/list-test

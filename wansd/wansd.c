@@ -9,7 +9,7 @@
 #include <syslog.h>
 #include <signal.h>
 #include <stdlib.h>
-#include "../Ethernet-Over-UDP/include/daemons.h"
+#include "daemons.h"
 
 struct tMapping {
   struct tMapping *next;

@@ -10,7 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
-#include "../Ethernet-Over-UDP/include/daemons.h"
+#include "daemons.h"
 
 static int testspeed = 0;
 
