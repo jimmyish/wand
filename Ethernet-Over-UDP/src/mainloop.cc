@@ -21,7 +21,7 @@ static fd2callback_t fd2callback;
 static fd_set rfd;
 static int highestfd = 0;
 
-volatile int endloop=0;
+volatile int endloop = 0;
 
 /* Set SIGPIPE to SIG_IGN - if wand goes AWOL we don't really want to die 
  * return >=0 on sucess
@@ -105,7 +105,8 @@ void mainloop(void)
 	      i->second(i->first);
 	    }
 	    if (endloop) {
-	      break;
+		logger(MOD_IPC, 1, "endloop set, exiting loop\n");
+	      	break;
 	    }
 	  }
 
