@@ -41,7 +41,7 @@ void logger(int module, int level, const char *format, ...)
 	 */
 	
 	assert(level <= 15 && level >= 0);
-	assert(module <= 6 && module >= 0);
+	assert(module <= 7 && module >= 0);
 	assert(daemonised == 0 || daemonised == 1);
 	assert(modtolevel[module] <= 15 && modtolevel[module] >= 0);
 	
