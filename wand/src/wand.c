@@ -4,7 +4,6 @@
 #include <sys/un.h>
 #include <sys/time.h>
 #include <arpa/inet.h>
-#include <malloc.h>
 #include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
