@@ -8,9 +8,8 @@
 * Etud should buffer and do one write for it's replies, instead of multiple.
 
 * client.cc send_request() needs work:
-  .) set a sigalarm handler; and a suitable timeout (command line settable?)
-     for replies from Etud
-  .) parse replies and display them sanely; don't just alarm and die
+  .) parse replies better
+  .) explain difference between "" and ''
 * client.cc needs a converse() routine
 * client.cc does not "pipeline" requests. Good Luck!
 * Etud.cc does not support the "version" query.
