@@ -21,6 +21,8 @@
 
 online_t online;
 
+bool operator !=(struct sockaddr_in a,struct sockaddr_in b) { return a.sin_port != b.sin_port || a.sin_addr.s_addr != b.sin_addr.s_addr || a.sin_family != b.sin_family; };
+
 bool operator ==(const struct sockaddr_in a, const struct sockaddr_in b)
 {
 	if (a.sin_addr.s_addr != b.sin_addr.s_addr)
@@ -138,7 +140,6 @@ int dump_table( FILE *stream )
 int main(int argc,char **argv)
 {
 	struct sockaddr_in test, test2;
-
 	test.sin_family = AF_INET;
 	test2.sin_family = AF_INET;
 	test.sin_port = 0;
