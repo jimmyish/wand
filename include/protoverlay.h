@@ -44,7 +44,11 @@ void delete_response( response_t *response );
  * format. Returns number of characters output.
  */
 int print_response( response_t *response, FILE *stream );
-  
+
+/* Functions for communicating with Etud */
+void tellEtud(char *msg, char *control_file_path);
+response_t *askEtud(char *msg, char *control_file_path);
+
 #ifdef __cplusplus
 }
 #endif

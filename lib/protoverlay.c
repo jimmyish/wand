@@ -6,12 +6,15 @@
 
 #include <sys/types.h>
 #include <sys/time.h>
+#include <sys/un.h>
+#include <sys/socket.h>
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <string.h>
+
 #include "protoverlay.h"
 
 
@@ -264,3 +267,81 @@ int print_response( response_t *response, FILE *stream )
   return count;
 }
 
+void tellEtud(char *msg, char *control_file_path)
+{
+	struct sockaddr_un sockname;
+	struct timeval timeout;
+	int fd=socket(PF_UNIX,SOCK_STREAM,0);
+	response_t *resp = NULL;
+
+	if (fd<0) {
+		perror("control socket");
+		fprintf(stderr,"Didn't write '%s'",msg);
+		return;
+	}
+
+	sockname.sun_family = AF_UNIX;
+	strcpy(sockname.sun_path,control_file_path);
+
+	if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) {
+		perror("control connect()");
+		fprintf(stderr,"Didn't write '%s'",msg);
+		close(fd);
+		return;
+	}
+
+	if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
+		return;
+
+	/* two second timeout between packets today */
+      	timeout.tv_usec = 0;
+	timeout.tv_sec = 2;
+
+	if( NULL != (resp = get_response( fd, &timeout )) ) {
+		/* We don't do anything with the response anyway. oh well */
+		delete_response( resp );
+		free( resp );
+	}
+
+	close(fd);
+}
+
+response_t *askEtud(char *msg, char *control_file_path)
+{
+	struct sockaddr_un sockname;
+	struct timeval timeout;
+	int fd=socket(PF_UNIX,SOCK_STREAM,0);
+	response_t *resp = NULL;
+
+	if (fd<0) {
+		perror("control socket");
+		fprintf(stderr,"Didn't write '%s'",msg);
+		return NULL;
+	}
+
+	sockname.sun_family = AF_UNIX;
+	strcpy(sockname.sun_path,control_file_path);
+
+	if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) {
+		perror("control connect()");
+		fprintf(stderr,"Didn't write '%s'",msg);
+		close(fd);
+		return NULL;
+	}
+
+	if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
+		return NULL;
+
+	/* two second timeout between packets today */
+		timeout.tv_usec = 0;
+		timeout.tv_sec = 2;
+
+	if( NULL == (resp = get_response( fd, &timeout )) ) {
+		close( fd );
+		return NULL;
+	}
+
+	close( fd );
+
+	return resp;
+}

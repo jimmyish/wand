@@ -20,85 +20,6 @@
 
 char *control_file_path = 0;
 
-void tellEtud(char *msg)
-{
-  struct sockaddr_un sockname;
-  struct timeval timeout;
-  int fd=socket(PF_UNIX,SOCK_STREAM,0);
-  response_t *resp = NULL;
-
-  if (fd<0) { 
-    perror("control socket");
-    fprintf(stderr,"Didn't write '%s'",msg);
-    return;
-  } 
-  
-  sockname.sun_family = AF_UNIX;
-  strcpy(sockname.sun_path,control_file_path);
-  
-  if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
-    perror("control connect()"); 
-    fprintf(stderr,"Didn't write '%s'",msg);
-    close(fd); 
-    return;
-  }
-  
-  if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
-    return;
-
-  /* two second timeout between packets today */
-  timeout.tv_usec = 0;
-  timeout.tv_sec = 2;
-
-  if( NULL != (resp = get_response( fd, &timeout )) ) {
-
-    /* We don't do anything with the response anyway. oh well */
-    delete_response( resp );
-    free( resp );
-  }
-  close( fd );
-}
-
-response_t *askEtud(char *msg)
-{
-  struct sockaddr_un sockname;
-  struct timeval timeout;
-  int fd=socket(PF_UNIX,SOCK_STREAM,0);
-  response_t *resp = NULL;
-
-  if (fd<0) { 
-    perror("control socket");
-    fprintf(stderr,"Didn't write '%s'",msg);
-    return NULL;
-  } 
-  
-  sockname.sun_family = AF_UNIX;
-  strcpy(sockname.sun_path,control_file_path);
-  
-  if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
-    perror("control connect()"); 
-    fprintf(stderr,"Didn't write '%s'",msg);
-    close(fd); 
-    return NULL;
-  }
-  
-  if (write(fd,msg,strlen(msg))!=strlen(msg) || write(fd,"\r\n",2)!=2)
-    return NULL;
-
-  /* two second timeout between packets today */
-  timeout.tv_usec = 0;
-  timeout.tv_sec = 2;
-
-  if( NULL == (resp = get_response( fd, &timeout )) ) {
-    close( fd );
-    return NULL;
-  }
-
-	close( fd );
-
-	return resp;
-
-}
 
 char *getword(char **buffer,int *len)
 {
@@ -181,7 +102,7 @@ void clearOldEntries(void)
     			snprintf(message,sizeof(message),
 					"DEL %s",
 					curr->mac);
-    			tellEtud(message);
+    			tellEtud(message, control_file_path);
 			if (!prev) {
 				assert(root == curr);
 				root = root->next;
@@ -212,7 +133,7 @@ void doPacket(char *packet,int len)
     char message[255];
     addEntry(mac,ip);
     snprintf(message,sizeof(message),"ADD %s %s",mac,ip);
-    tellEtud(message);
+    tellEtud(message, control_file_path);
   }
   clearOldEntries();
 }
@@ -343,7 +264,7 @@ int main(int argc,char **argv)
 	};
 
 	/* Get the MAC address from Etud */
-	resp = askEtud("GETMAC");
+	resp = askEtud("GETMAC", control_file_path);
 	if( resp->status == OKAY) {
 		strncpy(macaddr, resp->data[0]+7, 17);
 		macaddr[17]='\0';
