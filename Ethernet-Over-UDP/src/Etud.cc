@@ -23,14 +23,11 @@
 #include "debug.h"
 #include "config.h"
 
-int load_module(char *s)
+int load_module(char *filename)
 {
-	char filename[1024];
-	strcpy(filename,"/usr/local/lib/wand/");
-	strcat(filename,s);
 	if(!dlopen(filename,RTLD_NOW)) {
 		logger(MOD_INIT, 1, "Error loading module '%s': %s\n",
-				s, dlerror());
+				filename , dlerror());
 		
 		return 0;
 	}
