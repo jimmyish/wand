@@ -292,7 +292,8 @@ int main(int argc,char **argv)
 
 	/* Get the MAC address from Etud */
 	resp = askEtud("GETMAC");
-	if( resp->status >= OKAY && resp->status <= TIMEOUT_DATA ) {
+	print_response(resp);
+	if( resp->status == OKAY) {
 		strncpy(macaddr, resp->data[0]+7, 17);
 	}
 	delete_response( resp );

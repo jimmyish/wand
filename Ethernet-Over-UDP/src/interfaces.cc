@@ -104,6 +104,7 @@ int init_interface(void)
 		logger(MOD_IF, 1, "Socket Set MAC Address failed - %m\n");
 		return -1;
 	}
+	/* Set NOARP and MULTICAST on the interface */
 	
 	close(skfd);
 	
