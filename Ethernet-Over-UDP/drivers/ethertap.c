@@ -32,7 +32,7 @@
 #include <string.h>
 #include <errno.h>
 #include <fcntl.h>
-
+#include <assert.h>
 
 #include "ethertap_cfg.h" /* grab max and default /dev/tapX numbers */
 #include "driver.h"
@@ -46,10 +46,13 @@ static int ethertap_setup(char *req_name)
 	char tapdevice[16];
 	int tapdevno = FIRST_TAP_NUMBER;
 	struct ifreq ifr;
+	int ret;
 	
 	logger(MOD_DRV, 15, "ethertap_setup() entered...\n");
 
 
+	assert(strlen(req_name) <= IFNAMSIZ);
+	
 	ifname = strdup(req_name);
 	
 	if(ifname == NULL) {
@@ -72,10 +75,11 @@ static int ethertap_setup(char *req_name)
 		return -1;
 	}
 	
-	sprintf(ifr.ifr_name, "tap%d", tapdevno);
-	sprintf(ifr.ifr_newname, "%s", ifname);
+	snprintf(ifr.ifr_name, IFNAMSIZ, "tap%d", tapdevno);
+	snprintf(ifr.ifr_newname, IFNAMSIZ, "%s", ifname);
 	
-	if(ioctl(fd, SIOCSIFNAME, &ifr) < 0){
+	if((ret = ioctl(fd, SIOCSIFNAME, &ifr)) < 0){
+		printf("Errno: %d, Ret: %d", errno, ret);
 		logger(MOD_DRV, 1, 
 				"Could not rename ethertap interface to %s - %m.\n", 
 				ifname);
