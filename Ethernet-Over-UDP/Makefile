@@ -13,6 +13,9 @@ test: src/list-test
 
 drivers/ethertap.so: drivers/ethertap.c
 
+include/ethertap_cfg.h:
+	cp include/ethertap_cfg.h.sample include/ethertap_cfg.h
+
 drivers/%.o: drivers/%.c
 	$(CC) $(CFLAGS) -fPIC -c $^ -o $@
 
