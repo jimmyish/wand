@@ -44,41 +44,42 @@ int main(int argc,char **argv)
 	char *module=NULL;
 	char *conffile=NULL;
 	char *pidfile="Etud";
+	
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
+		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ NULL, 0, NULL }
 	};
 
 	// Parse command line arguments
 	char ch;
 	while((ch = getopt(argc, argv, "f:p:")) != -1){
-	  switch(ch)
-	    {	
-	    case 'f':
-	      conffile = strdup(optarg);
+		switch(ch){	
+			case 'f':
+				conffile = strdup(optarg);
 				break;
 			case 'p':
 				pidfile = strdup(optarg);
 				break;
-	    }
+		}
 	}
 	
 	if (conffile != NULL) {
-	  logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
-	  if (parse_config(main_config,conffile)) {
-	    logger(MOD_INIT,1,"Bad Config file %s, giving up\n", conffile);
-	    return 1;
-	  }
+	  	logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
+	  	if (parse_config(main_config,conffile)) {
+	    		logger(MOD_INIT,1,"Bad Config file %s, giving up\n", conffile);
+	    		return 1;
+	  	}
 	} else {
-	  logger(MOD_INIT, 15, "About to parse default config file\n");
-	  if (parse_config(main_config,"/usr/local/etc/etud.conf")) {
-	    logger(MOD_INIT,1,"Bad Config file, giving up\n");
-	    return 1;
-	  }
+		logger(MOD_INIT, 15, "About to parse default config file\n");
+		if (parse_config(main_config,"/usr/local/etc/etud.conf")) {
+			logger(MOD_INIT,1,"Bad Config file, giving up\n");
+			return 1;
+	  	}
 	}
 
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");

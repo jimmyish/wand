@@ -19,7 +19,7 @@
 #include "debug.h"
 
 int udpfd;
-
+int udpport;
 
 int udp_read(int udpfd,char *buffer,int size)
 {
@@ -38,7 +38,7 @@ static void udp_callback(int fd)
 	send_interface(buffer,size);
 };
 
-int udp_start(int port=22222)
+int udp_start(void)
 {
 	struct sockaddr_in addr;
 	int sock;
@@ -50,7 +50,7 @@ int udp_start(int port=22222)
 	}
 
 	addr.sin_family=AF_INET;
-	addr.sin_port=htons(port);
+	addr.sin_port=htons(udpport);
 	addr.sin_addr.s_addr=htonl(INADDR_ANY);
 
 	if ((bind(sock,(struct sockaddr *)&addr,sizeof(addr)))<0) {

@@ -37,7 +37,7 @@ static void udp_sendto(ip_t ip,char *buffer,int size)
 {
 	struct sockaddr_in dest;
 	dest.sin_family = AF_INET;
-	dest.sin_port=htons(UDPPORT);
+	dest.sin_port=htons(udpport);
 	dest.sin_addr.s_addr=ip;
 	sendto(udpfd,buffer,size,0,(const struct sockaddr *)&dest,sizeof(dest));
 }
