@@ -122,8 +122,10 @@ void clearOldEntries(void)
 {
 	struct node_t *tmp = root;
 	struct node_t *tmp2 = NULL;
+	struct node_t *next = NULL;
 	char message[255];
 	while (tmp) {
+		next = tmp->next;
 		if (tmp->flag) {
 			// syslog("Removing %s",mac)
     			snprintf(message,sizeof(message),
@@ -143,8 +145,11 @@ void clearOldEntries(void)
 				free(tmp);
 			}
 		}
-		tmp2=tmp;
-		tmp=tmp->next;
+		else {
+			temp->flag=1; /* old */
+			tmp2=tmp;
+		}
+		tmp=next;
 	}
 }
 
