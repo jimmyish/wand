@@ -165,14 +165,14 @@ int main(int argc,char **argv)
 	if (udp_start()<0) {
 		logger(MOD_INIT, 1, "Failed to create udp socket.\n");
 		logger(MOD_INIT, 1, "Aborting...\n");
-		//device->down();
+		shutdown_interface();
 		return 1;
 	}
 
 	logger(MOD_INIT, 15, "UDP started, about to start UNIX domain socket\n");
 	if (ui_setup()<0) {
 		logger(MOD_INIT, 1, "Failed to create unix domain socket.\n");
-		//interface->down();
+		shutdown_interface();
 		return 1;
 	}
 
@@ -194,11 +194,10 @@ int main(int argc,char **argv)
  	// Clean up the control file
 	unlink("/var/run/Etud.ctrl");
       	// Clean up the pid file
-      	if (do_daemonise) {
+      	if(daemonised){
             unlink(pidfile);
       	}
       	// shutdown the interface
-	//syslog(LOG_DAEMON,"Attempting to shutdown interfacce\n");
-	//logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
-	//shutdown_interface();
+	logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
+	shutdown_interface();
 }

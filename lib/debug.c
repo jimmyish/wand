@@ -11,6 +11,7 @@
 #include <assert.h> /* assert */
 
 #include "debug.h"
+#include "daemons.h"
 
 static int loglookup[]={LOG_ALERT, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
 		 LOG_NOTICE, LOG_INFO, LOG_DEBUG, LOG_DEBUG, LOG_DEBUG,

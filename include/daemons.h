@@ -15,6 +15,7 @@ extern "C" {
 void put_pid( char *fname );
 void daemonise( char *name ) ;
 
+extern int daemonised;
 
 #ifdef __cplusplus
 }
