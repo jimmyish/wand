@@ -1,0 +1,36 @@
+# IFADDR
+# Your ip goes here
+# This is the IP of your machine
+#
+# default: none
+# required: yes
+# IFADDR=10.100.1.1
+
+# INTERFACE
+# which interface wand will create.
+# This is likely to be tap0 until I write some code to rename interfaces :)
+#
+# default: tap0
+# required: no
+#
+# INTERFACE=tap0
+
+# ETHERNET
+# the MAC address of the ethernet card on wand
+# You shouldn't need to change this, by default it uses the MAC of eth0.  If
+# you don't have eth0, or you are running more than one wand node, then this
+# will need updating.  Be sure if you are overriding this that you are
+# overriding it with a valid mac, as some of the high bits are magical.
+#
+# default: the MAC address of eth0
+# required: no
+#
+# MAC=00:00:01:02:03:04
+
+# SERVERS
+# location of wansd servers you associate with.
+#
+# default: none
+# required: yes
+#
+# SERVERS=1.2.3.4
