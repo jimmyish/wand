@@ -97,6 +97,7 @@ int main(int argc,char **argv)
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
+		{ "debug_MOD_IF", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IF]},
 		{ NULL, 0, NULL }
 	};
 
