@@ -94,7 +94,7 @@ done
 echo
 
 echo " * Bringing the networking interface up."
-$IP link set tap0 up
+$IP link set $INTERFACE up
 
 echo " * Done."
 
