@@ -3,7 +3,8 @@ CXXFLAGS=-Iinclude/ -g -Wall -O3
 
 all: Etud drivers/ethertap.so
 
-Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o src/mainloop.o
+Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
+	src/mainloop.o src/daemons.o
 	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -o Etud
 
 drivers/ethertap.so: drivers/ethertap.c
