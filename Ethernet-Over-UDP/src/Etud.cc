@@ -14,6 +14,7 @@
 #include <unistd.h> /* for select */
 #include <fcntl.h> /* for open */
 #include <getopt.h> /* for parsing command line options */
+#include <syslog.h>
 
 #include "list.h"
 #include "driver.h"
@@ -130,7 +131,7 @@ int main(int argc,char **argv)
             unlink(pidfile);
       	}
       	// shutdown the interface
-	syslog("Attempting to shutdown interfacce\n");
+	syslog(LOG_DAEMON,"Attempting to shutdown interfacce\n");
 	logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
 	shutdown_interface();
 }
