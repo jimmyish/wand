@@ -1,5 +1,7 @@
 * wand desperately needs to use select, not sleep() :)
 * Add make install
-* Add a configuration file for Etud -- including where it's drivers are.
+* Add a configuration file for Etud -- including where it's drivers are, or
+  hard code the correct place that make install put 'em.
 * have wand resolve FQDN.
-
+* wand/wansd both need to have daemonize() (see Etud.cc for details on how)
+* Etud should buffer and do one write for it's replies, instead of multiple.
