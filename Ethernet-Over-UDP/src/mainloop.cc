@@ -83,13 +83,34 @@ void remRead(int fd)
 	FD_CLR(fd,&rfd);
 }
 
+void wait_for_event(fd_set &rfd)
+{
+	int ret;
+	fd_set rfd2;
+
+	do {
+		rfd2 = rfd;
+		ret=select(highestfd+2, &rfd2, NULL, NULL, NULL);
+		if (ret<0 && !endloop)
+			logger(MOD_IPC, 4, "Select returned an"
+				" error: %s\n", strerror(errno));
+	} while (ret<0 && !endloop);
+
+}
+
+void do_events(fd_set rfd)
+{
+	for (fd2callback_t::const_iterator i=fd2callback.begin(); 
+			i!=fd2callback.end(); i++) {
+
+		if (FD_ISSET(i->first,&rfd))
+			i->second(i->first); /* Worst line of code -- jpc2 */
+	}
+}
+
 void mainloop(void)
 {
 	fd_set rfd2;
-	struct timeval timeout;
-	
-	timeout.tv_sec = 1;
-	timeout.tv_usec = 0;
 	
 	if( 0 > add_sig_hnd() ) {
 		logger(MOD_INIT, 4, "Unable to add Signal Handler - "
@@ -97,30 +118,12 @@ void mainloop(void)
 	}
 	while(!endloop) {
 		rfd2=rfd;
-		timeout.tv_sec = 1;
-		if(select(highestfd+2, &rfd2, NULL, NULL, &timeout) < 0){				if(endloop){
-				logger(MOD_IPC, 1, "endloop set, exiting loop\n");
-				break;
-			} else {
-				logger(MOD_IPC, 4, "Select returned an"
-					" error: %s\n", strerror(errno));
-			}
-		} else {
-			for (fd2callback_t::const_iterator 
-					i=fd2callback.begin(); 
-					i!=fd2callback.end(); 
-				       i++) {
-	    
-	    			if (FD_ISSET(i->first,&rfd2)) {
-	      				i->second(i->first);
-	    			}
-	    			if (endloop) {
-					logger(MOD_IPC, 1, "endloop set, "
-						" exiting loop\n");
-	      				break;
-	    			}
-	  		}
-
+		wait_for_event(rfd2);
+		if (!endloop) {
+			do_events(rfd2);
+		}
+		else {
+			logger(MOD_IPC, 1, "endloop set, exiting loop\n");
 		}
 	}
 	logger(MOD_INIT, 1, "Shutting down - breaking out of mainloop\n");
@@ -131,5 +134,4 @@ void mainloop(void)
 		     i++) {
 		close(i->first);
 	}
-	
 }
