@@ -270,10 +270,11 @@ int main(int argc,char **argv)
 
 	/* Get the MAC address from Etud */
 	resp = askEtud("GETMAC");
-	if( resp->status >= OKAY && resp->status <= TIMEOUT_DATA ) {
+	print_response(resp, stdout);
+	/*if( resp->status >= OKAY && resp->status <= TIMEOUT_DATA ) {
 		printf("%s\n", resp->data[0]);
 		strncpy(macaddr, resp->data[0], 17);
-	}
+	}*/
 
 	srand(time(NULL));
 	
