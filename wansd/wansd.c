@@ -30,7 +30,10 @@ int addrcmp(struct sockaddr_in a,struct sockaddr_in b)
 	}
 }
 
-int dopacket(char *buffer,int length,struct sockaddr_in address)
+/* Returns NULL if you have to send an update to everyone,
+ * or the mapping to send it to. :)
+ */
+struct tMapping *dopacket(char *buffer,int length,struct sockaddr_in address)
 {
 	struct tMapping *entry = findMapping(buffer);
 	int update = 0;
@@ -48,12 +51,11 @@ int dopacket(char *buffer,int length,struct sockaddr_in address)
 	}
 	entry->lastseen = time(NULL);
 	entry->version = 1;
-	return update;
+	return (!update) ? entry : NULL;
 }
 
-void sendupdate(int fd)
+void sendupdate(int fd,struct tMapping *entry)
 {
-	struct tMapping *entry;
 	char buffer[1024];
 	char *b=buffer;
 
@@ -72,9 +74,15 @@ void sendupdate(int fd)
 			b+=sprintf(b,"%s",inet_ntoa(entry->address.sin_addr))+1;
 		}
 	}
-	for(entry = userList; entry; entry=entry->next) {
-		sendto(fd,buffer,b-buffer,0,(struct sockaddr *)&entry->address,
-		    	sizeof(entry->address));
+	if (!entry) {
+		for(entry = userList; entry; entry=entry->next) {
+		  sendto(fd,buffer,b-buffer,0,
+		      (struct sockaddr *)&entry->address,sizeof(entry->address));
+		}
+	}
+	else {
+	  sendto(fd,buffer,b-buffer,0,(struct sockaddr *)&entry->address,
+	      sizeof(entry->address));
 	}
 }
 
@@ -112,8 +120,7 @@ int main(int argc,char **argv)
 		} else {
 			errors=0;
 		}
-		dopacket(buffer,data,address);
-		sendupdate(sock);
+		sendupdate(sock,dopacket(buffer,data,address));
 	};
 	return 0;
 }
