@@ -104,8 +104,16 @@ int init_interface(void)
 		logger(MOD_IF, 1, "Socket Set MAC Address failed - %m\n");
 		return -1;
 	}
-	/* Set NOARP and MULTICAST on the interface */
+	/* Set ARP and MULTICAST on the interface */
 	
+  /* Set MTU on the interface  */
+  ifr.ifr_mtu = mtu; 
+  if(ioctl(skfd, SIOCSIFMTU, &ifr) < 0) {
+    logger(MOD_IF, 1, "Socket Set MTU failed - %m\n");
+    return -1;
+  }
+  
+  
 	close(skfd);
 	
 	addRead(ifd,do_read);

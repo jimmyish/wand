@@ -30,6 +30,7 @@
 extern int modtolevel[];
 char *macaddr=NULL;
 char *ifname=NULL;
+int mtu=0;
 
 int load_module(char *filename)
 {
@@ -54,8 +55,9 @@ void usage(const char *prog) {
 	[-i ifname]	- Name of the interface to create 
 	[-l port]	- Communicate on the specified port
 	[-m macaddr]	- MAC address for the created interface
+  [-M mtu] - MTU for the created interface
 	[-p pidfile]	- File to store pid in
-	
+
 Options on command line override those in the config file.\n", 
 	basename(progname));
 
@@ -71,7 +73,7 @@ int main(int argc,char **argv)
 	char *conffile=NULL;
 	char *pidfile="Etud";
 	char *ctrlfile=NULL;
-	
+  
 	/* Temporary options read from the command line */
 	char *cmacaddr=NULL;
 	char *cmodule=NULL;
@@ -80,7 +82,8 @@ int main(int argc,char **argv)
 	char *cifname=NULL;
 	int cdo_daemonise=1;
 	int cudpport=-1;
-	
+  int cmtu=-1;
+
 	/* Possible config file options */
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
@@ -90,6 +93,7 @@ int main(int argc,char **argv)
 		{ "pidfile", TYPE_STR|TYPE_NULL, &pidfile },
 		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ "ctrlfile", TYPE_STR|TYPE_NULL, &ctrlfile },
+    { "mtu", TYPE_INT|TYPE_NULL, &mtu },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
@@ -98,7 +102,7 @@ int main(int argc,char **argv)
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "c:d:Df:hi:l:m:p:")) != -1){
+	while((ch = getopt(argc, argv, "c:d:Df:hi:l:m:M:p:")) != -1){
 	switch(ch){	
 			case 'c':
 				cctrlfile = strdup(optarg);
@@ -124,6 +128,9 @@ int main(int argc,char **argv)
 				break;
 			case 'm':
 				cmacaddr = strdup(optarg);
+				break;
+			case 'M':
+				cmtu = atoi(optarg);
 				break;
 			case 'p':
 				cpidfile = strdup(optarg);
@@ -161,6 +168,8 @@ int main(int argc,char **argv)
 		do_daemonise = 0;
 	if (cudpport != -1)
 		udpport = cudpport;
+  if (cmtu != -1)
+    mtu = cmtu;
 	if (cctrlfile != NULL) 
 		ctrlfile = strdup(cctrlfile);
 	if (cifname != NULL)

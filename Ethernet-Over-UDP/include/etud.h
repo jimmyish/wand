@@ -9,5 +9,5 @@
 
 extern char *macaddr;
 extern char *ifname;
-
+extern int mtu;
 #endif
