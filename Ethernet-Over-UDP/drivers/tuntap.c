@@ -115,7 +115,8 @@ static int tuntap_down(void)
         if (fd > 0)
                 close(fd);
 
-        return 0;
+	// return the old fd, so we can close properly
+        return fd;
 }
 
 static struct interface_t tuntap = {
