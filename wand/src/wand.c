@@ -163,16 +163,16 @@ void usage(const char *prog) {
         progname=strdup(prog);
         
 
-	printf("%s:	[-c ctrlfile]	- Specify the Etud control file
-	[-D]		- Don't daemonise
-	[-f configfile]	- Read config from this file
-	[-h]		- This help
-	[-i server]	- Specify the wansd server 
-	[-l port]	- Communicate on the specified port
-	[-L level]      - Default logging level, 0 = silent, 15 = noisy
-	[-p pidfile]	- File to store pid in
-	[-P protocol]	- The protocol module to use
-Options on command line override those in the config file.				\n", basename(progname));
+	printf("%s:	[-c ctrlfile]	- Specify the Etud control file"
+"	[-D]		- Don't daemonise"
+"	[-f configfile]	- Read config from this file"
+"	[-h]		- This help"
+"	[-i server]	- Specify the wansd server "
+"	[-l port]	- Communicate on the specified port"
+"	[-L level]      - Default logging level, 0 = silent, 15 = noisy"
+"	[-p pidfile]	- File to store pid in"
+"	[-P protocol]	- The protocol module to use"
+"Options on command line override those in the config file.				\n", basename(progname));
 }
 
 int mainloop(void)
@@ -183,6 +183,7 @@ int mainloop(void)
 			 every 10 minutes
 		      */
 	struct timeval tm;
+	int expire;
 
 	tm.tv_sec=0;
 	tm.tv_usec=0;
@@ -190,16 +191,18 @@ int mainloop(void)
 	  	int addrlen = sizeof(address);
 		char buffer[65536];
 		int len;
+		int now;
 		fd_set rfds;
 
-		tm.tv_usec = 0;
-		if (tm.tv_sec<1) {
+		now = time(NULL);
+
+		if (expire >= now) {
 		  if (flag) {
-		    tm.tv_sec=30;
+	            expire = now + 30;
 		  }
 		  else 
 		  {
-		    tm.tv_sec=300+rand()%600;
+	            expire = now + 300 + rand()%600;
 		  }
 		  flag=1;
 		  sendto(sock,macaddr,strlen(macaddr)+1,0,
@@ -207,6 +210,8 @@ int mainloop(void)
 		}
 		FD_ZERO(&rfds);
 		FD_SET(sock,&rfds);
+		tm.tv_usec = 0;
+		tm.tv_sec = expire - now;
 		select(sock+1,&rfds, NULL, NULL, &tm);
 		if (FD_ISSET(sock,&rfds)) {
 			len=recvfrom(sock,buffer,sizeof(buffer),0,(struct sockaddr *)&address,(socklen_t *)&addrlen);
