@@ -64,6 +64,7 @@ void sig_hnd( int signo )
 
 void addRead(int fd,callback_t callback)
 {
+	assert(fd!=-1);
 	FD_SET(fd,&rfd);
 	fd2callback[fd]=callback;
 	if (highestfd<fd)
@@ -92,6 +93,7 @@ void mainloop(void)
 	       i++) {
 	    
 	    if (FD_ISSET(i->first,&rfd2)) {
+				printf("Descriptor %u is set...\n", i->first);
 	      i->second(i->first);
 	    }
 	    if (endloop) {

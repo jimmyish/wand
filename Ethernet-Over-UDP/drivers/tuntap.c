@@ -68,7 +68,7 @@ static int tuntap_setup(char *req_name) {
 
 static int tuntap_read(char *frame, int length)
 {
-        int c;
+  int c;
 	char buf[length+2];
 
 	c = read(fd, buf, length + 2);

@@ -11,6 +11,7 @@
 #include <syslog.h> /* for openlog */
 #include <string.h> /* for strrchr */
 #include <stdlib.h> 
+#include <assert.h>
 
 #include "daemons.h"
 
@@ -42,6 +43,7 @@ void put_pid( char *fname )
 
 void daemonise(char *name) 
 {
+	int rv;
 	
 	switch (fork()) {
 	case 0:
@@ -67,9 +69,13 @@ void daemonise(char *name)
 	close(0);
 	close(1);
 	close(2);
-	open("/dev/null",O_RDONLY);
-	open("/dev/console",O_WRONLY);
-	open("/dev/console",O_WRONLY);
+	rv = open("/dev/null",O_RDONLY);
+	assert(rv == 0);
+	rv = open("/dev/console",O_WRONLY);
+	assert(rv == 1);
+	rv = dup(rv);
+	assert(rv == 2);
+	
 	daemonised = 1;
 
 	name = strrchr(name,'/') ? strrchr(name,'/') + 1 : name;

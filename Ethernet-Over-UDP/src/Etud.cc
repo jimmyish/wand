@@ -42,6 +42,7 @@ int main(int argc,char **argv)
 	int do_daemonise=1;
 	char *module=NULL;
 	char *conffile=NULL;
+	char *pidfile="Etud";
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
@@ -53,14 +54,18 @@ int main(int argc,char **argv)
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "f:")) != -1){
+	while((ch = getopt(argc, argv, "f:p:")) != -1){
 	  switch(ch)
 	    {	
 	    case 'f':
 	      conffile = strdup(optarg);
+				break;
+			case 'p':
+				pidfile = strdup(optarg);
+				break;
 	    }
 	}
-
+	
 	if (conffile != NULL) {
 	  logger(MOD_INIT, 15, "Parsing config file specified on command line\n");
 	  if (parse_config(main_config,conffile)) {
@@ -112,7 +117,7 @@ int main(int argc,char **argv)
 		logger(MOD_INIT, 7, "Attempting to Daemonise...\n");
 
 		daemonise(argv[0]);
-		put_pid("Etud");
+		put_pid(pidfile);
 		logger(MOD_INIT, 7, "Daemonised\n");
 	}
 
@@ -122,7 +127,7 @@ int main(int argc,char **argv)
 	unlink("/var/run/Etud.ctrl");
       // Clean up the pid file
       if (do_daemonise) {
-            unlink("/var/run/Etud.pid");
+            unlink(pidfile);
       }
       
 }
