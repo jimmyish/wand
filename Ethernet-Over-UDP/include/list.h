@@ -6,7 +6,8 @@
 
 #ifndef LIST_H
 #define LIST_H
-#include <map>
+#include <utility> /* pair<,> */
+#include <list> /* list<> */
 #include <string.h>
 #include <ctype.h> /* hack hack */
 #include <stdio.h> /* hack hack */
@@ -61,6 +62,14 @@ class ether_t {
 			memcpy(address,b.address,sizeof(address));
 			return *this;
 		};
+
+		bool operator ==(const ether_t &b ) const {
+		  for (int i=0;i<6;i++)
+		    if (address[i]!=b.address[i])
+		      return false;
+		  return true;
+		  
+		};
 		
 		char *operator()() const {
 			static char buf[18];
@@ -75,18 +84,27 @@ class ether_t {
 		}
 };
 
-typedef int ip_t;
+typedef unsigned int ip_t; /* need unsigned 32 bit */
 
-/* Maps an ethernet address to an ip */
-typedef std::map<ether_t, ip_t > online_t;
+/* Maps an ethernet address to an ip
+ * Provides no guarantee any key (ether_t) only has ONE data value (ip_t)
+ */
+typedef std::pair<ether_t, ip_t > node_t;
+typedef std::list<node_t> online_t;
 
 extern online_t online;
 
 
 
-void add_ip(ether_t ether,ip_t ip);
+bool add_ip(ether_t ether,ip_t ip); /* false if already existed */
 bool rem_ip(ether_t ether); /* false if not found */
 ip_t find_ip(ether_t ether); /* return the ip associated with this ether */
+
+/* Outputs the entire table to the given file stream.
+ * Returns the number of entries so dumped
+ * hack hack
+ */
+int dump_table( FILE *stream );
 
 #endif
 

@@ -1,5 +1,5 @@
 CFLAGS=-Iinclude/ -g -Wall -O3
-CXXFLAGS=-Iinclude/ -g -Wall -O3
+CXXFLAGS=-Iinclude/ -g -Wall -O3 #-DINSANE_LIST_DEBUG
 
 all: Etud drivers/ethertap.so test
 
@@ -17,7 +17,7 @@ drivers/%.o: drivers/%.c
 	$(CC) $(CFLAGS) -fPIC -c $^ -o $@
 
 src/%-test: src/%.cc
-	$(CXX) $(CFLAGS) -DTEST $^ -o $@
+	$(CXX) $(CXXFLAGS) -DTEST $^ -o $@
 
 drivers/%.so: drivers/%.o
 	ld -x --shared $< -o $@
