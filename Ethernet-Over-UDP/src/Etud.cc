@@ -67,7 +67,7 @@ int main(int arvc,char **argv)
 
 	/* Lets go to the background */
 	cout << "Attempting to Daemonise..." << endl;
-	daemonise();
+	daemonise(argv[0]);
 	put_pid("Etud");
 
 	mainloop();

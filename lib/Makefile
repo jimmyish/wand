@@ -1,9 +1,9 @@
 CXXFLAGS=-I../include
-CFLAGS=-I../include
+CFLAGS=-I../include -g
 TESTS=$(wildcard tests/*.c)
 SUCCESS=$(addsuffix .test,$(basename $(TESTS)))
 
-all: libconfig.a daemons.o protoverlay.o test
+all: libconfig.a daemons.o protoverlay.o debug.o test
 
 libconfig.a:  \
 	     libconfig.a(config.parser.o) \
@@ -22,7 +22,7 @@ clean:
 %.lexer.c: %.l
 	flex -o$@ $<
 
-%.test: %.o libconfig.a
-	gcc $(CFLAGS) $< -L. -lconfig -lfl -o $(basename $<)
+%.test: %.o libconfig.a daemons.o debug.o
+	gcc $(CFLAGS) $< -L. -lconfig -lfl debug.o daemons.o -o $(basename $<)
 	$(basename $<) $(basename $<).in 
 

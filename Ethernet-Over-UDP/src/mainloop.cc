@@ -18,20 +18,8 @@ static fd2callback_t fd2callback;
 static fd_set rfd;
 static int highestfd = 0;
 
-/* Used in ui.cc to indicate we would like signals to be caught, not fatal.
- */
-volatile int isWriting = 0;
 
-static void our_sig_hnd( int signo )
-{
-	if(isWriting == 0 ) {
-		fprintf( stderr, "Caught signal %i outside write()\n", signo );
-		exit( 3 );
-	}
-	return;
-}
-
-/* attempt to hook our_sig_hnd in to some signals
+/* Set SIGPIPE to SIG_IGN - if wand goes AWOL we don't really want to die 
  * return >=0 on sucess
  */
 int add_sig_hnd( void )

@@ -8,6 +8,7 @@
 #include <unistd.h> /* for getpid, write, close, fork, setsid, chdir */
 #include <fcntl.h> /* for creat,open */
 #include <stdio.h> /* for snprintf */
+#include <syslog.h> /* for openlog */
 
 #include "daemons.h"
 
@@ -37,7 +38,7 @@ void put_pid( char *fname )
 	close(fd);
 }
 
-void daemonise( void ) 
+void daemonise(char *name) 
 {
 	switch (fork()) {
 	case 0:
@@ -66,4 +67,7 @@ void daemonise( void )
 	open("/dev/null",O_RDONLY);
 	open("/dev/console",O_WRONLY);
 	open("/dev/console",O_WRONLY);
+	daemonised = 1;
+
+	openlog(name, LOG_PID, LOG_DAEMON);
 }	

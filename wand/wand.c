@@ -120,7 +120,7 @@ int main(int argc,char **argv)
 		return 1;
 	}
 	
-	daemonise();
+	daemonise(argv[0]);
 	put_pid("wand");
 	
 	tm.tv_sec=0;

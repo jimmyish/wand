@@ -13,7 +13,7 @@ extern "C" {
 
 
 void put_pid( char *fname );
-void daemonise( void ) ;
+void daemonise( char *name ) ;
 
 
 #ifdef __cplusplus

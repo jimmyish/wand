@@ -171,7 +171,7 @@ int main(int argc,char **argv)
   
   signal(SIGUSR1, printlist);
   
-  daemonise();
+  daemonise(argv[0]);
   put_pid("wansd");
   openlog(argv[0],LOG_PID,LOG_DAEMON);
   syslog(LOG_NOTICE,"%s started.",argv[0]);

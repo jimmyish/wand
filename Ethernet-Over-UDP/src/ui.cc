@@ -20,13 +20,6 @@
 #include "driver.h"
 #include "mainloop.h"
 
-/* This flag is vewwy important. it is used to indicate we are trying to
- * write to a socket and would appreciate any signals being caught, not
- * killing us off.
- * No idea what signals to catch. try mainloop.cc
- */
-extern volatile int isWriting;
-
 void ui_process_callback(int fd)
 {
 	char buffer[1024];
@@ -134,19 +127,14 @@ void ui_process_callback(int fd)
 	return;
 }
 
-/* We would really like to catch any signals thrown in here
- */
 int internal_send( int sock, char *msg, int msglen )
 {
 	int retval = 0;
-	isWriting = 1;
 	if( 0 > (retval = write(sock,msg,msglen) ) ) {
 		perror( "send:write" );
-		isWriting = 0;
 		return retval;
 	}
 
-	isWriting = 0;
 	return retval;
 }
 
