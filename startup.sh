@@ -28,6 +28,11 @@ if [ "x$ETHERNET" = "x" ]; then
 	exit;
 fi
 
+if [ "x$SERVER" = "x" ]; then
+	echo No listed wand servers.
+	exit;
+fi
+
 ######
 #
 # Everything below here shouldn't need changing
@@ -45,38 +50,36 @@ function find_program() {
 IP=$( find_program "ip" )
 
 if [ ! -x $IP ]; then
-	echo iproute: not found
+	echo ip: not found
 	exit;
 fi
 
-# Start up the tunnel.  The tunnel programs dumb at the moment, so let it
-# do its thing in the background. 
-Ethernet-Over-UDP/Etud &
+# Start up the tunnel.  
+echo " * Starting Ethernet over IP driver"
+Ethernet-Over-UDP/Etud
 
-# Because it's dumb, we're going to give it 5s to sort itself out.
-sleep 5
-
-echo Configuring link layer.
+echo " * Configuring link layer."
 $IP link set $INTERFACE \
 	arp on \
 	multicast off \
 	address $ETHERNET \
 	mtu 576
 
-echo Configuring ipv4 layer.
-echo " Removing stale entries"
+echo " * Configuring ipv4 layer."
+echo "  * Removing stale entries"
 $IP addr flush dev $INTERFACE
-echo " Adding $IFADDR"
+echo "  * Adding $IFADDR"
 $IP addr add $IFADDR/8 broadcast 10.255.255.255 dev $INTERFACE
 
-echo Configuring peers.
-while read interface ip comment; do
-	echo peer $interface is on ip $ip
-	clientsrc/client "add $interface $ip"
-done < ./membership.txt
+echo -n " * Starting wand"
+for i in $SERVERS; do
+	echo " ${i}"
+	./wand $ETHERNET $i
+done
+echo
 
-echo Bringing the networking interface up.
+echo " * Bringing the networking interface up."
 $IP link set tap0 up
 
-echo Done.
+echo " * Done."
 

@@ -1,14 +1,16 @@
 #include <netinet/in.h>
 #include <sys/un.h>
 #include <sys/socket.h>
-#include <stdio.h>
-#include <unistd.h>
-#include <string.h>
+#include <arpa/inet.h>
 #include <malloc.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <time.h>
+#include <unistd.h>
 
 void tellEtud(char *msg)
 {
-  int size;
   struct sockaddr_un sockname;
   int fd=socket(PF_UNIX,SOCK_STREAM,0);
   if (fd<0) { 
@@ -35,14 +37,14 @@ char *getword(char **buffer,int *len)
   char *tmp=*buffer;
   while(**buffer && *len)
   {
-    *buffer++;
-    *len--;
+    (*buffer)++;
+    (*len)--;
   }
-  buffer++;
+  (*buffer)++;
   return tmp;
 }
 
-int doPacket(char *packet,int len)
+void doPacket(char *packet,int len)
 {
   while(len>0) {
     char *mac=getword(&packet,&len);
@@ -58,7 +60,11 @@ int main(int argc,char **argv)
 	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	struct sockaddr_in address;
 	struct sockaddr_in serveraddr;
-	int errors=0;
+
+	if (argc<2) {
+	  printf("%s serverip mac\n",argv[0]);
+	  return 1;
+	}
 
 	if (sock<0) {
 		perror("socket");
@@ -73,7 +79,9 @@ int main(int argc,char **argv)
 
 	serveraddr.sin_family = AF_INET;
 	serveraddr.sin_port = htons(44444);
-	inet_aton(serveraddr.sin_addr,argv[1]);
+	if(!inet_aton(argv[1],&serveraddr.sin_addr)) {
+	  	perror("inet_aton");
+	}
 	if (bind(sock,(struct sockaddr *)&address,sizeof(address))<0) {
 		perror("bind");
 		return 1;
