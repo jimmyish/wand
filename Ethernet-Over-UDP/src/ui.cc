@@ -170,7 +170,7 @@ static void ui_callback(int fd)
 	}
 }
 
-int ui_setup(char *s="/var/run/Etud.ctrl")
+int ui_setup(char *s)
 {
 	int fd=socket(PF_UNIX,SOCK_STREAM,0);
 	if (fd<0) {

@@ -14,7 +14,7 @@
 #include "debug.h"
 #include "mainloop.h"
 
-typedef map<int,callback_t> fd2callback_t;
+typedef std::map<int,callback_t> fd2callback_t;
 
 static fd2callback_t fd2callback;
 
