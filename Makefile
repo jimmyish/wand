@@ -7,11 +7,11 @@ all: lib/daemons.o lib/protoverlay.o
 		$(MAKE) -C $$i all; \
 	done
 
-lib/daemons.o: src/daemons.cc include/daemons.h
-	$(CXX) $(CXXFLAGS) -c src/daemons.cc -o lib/daemons.o
+lib/daemons.o: lib/daemons.cc include/daemons.h
+	$(CXX) $(CXXFLAGS) -c lib/daemons.cc -o lib/daemons.o
 
-lib/protoverlay.o: src/protoverlay.c include/protoverlay.h
-	$(CC) $(CFLAGS) -c src/protoverlay.c -o lib/protoverlay.o
+lib/protoverlay.o: lib/protoverlay.c include/protoverlay.h
+	$(CC) $(CFLAGS) -c lib/protoverlay.c -o lib/protoverlay.o
 
 clean:
 	rm -f lib/*.o src/*~ include/*~
