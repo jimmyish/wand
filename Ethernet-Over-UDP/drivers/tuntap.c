@@ -30,6 +30,7 @@
 #include <linux/if_tun.h>
 
 #include "driver.h"
+#include "debug.h"
 
 static char tapdevname[32];
 static int fd = -1;
@@ -40,7 +41,7 @@ static int tuntap_setup(char *req_name) {
 
 	strcpy(tapdevname, req_name);
 
-	printf("tuntap_setup () entered...\n");
+	logger(MOD_DRIVERS, 7, "tuntap_setup () entered...\n");
 	
 	fd = 0;
 
@@ -59,7 +60,7 @@ static int tuntap_setup(char *req_name) {
 		      return -1;
 		}
 		
-		fprintf(stderr, "Interface is: %s\n", ifr.ifr_name); 
+		logger(MOD_DRIVERS, 7, "Interface is: %s\n", ifr.ifr_name); 
 		return fd;
 	}
 	return 0;
