@@ -80,6 +80,15 @@ int init_interface(void)
 	return 1;
 }
 
+int shutdown_interface(void)
+{
+	int ifd;
+	if ((ifd=driver->down())<=0) {
+		return 0;
+	}
+	remRead(ifd);
+	return 1;
+}
 void send_interface(char *buffer,int size)
 {
 	driver->write(buffer,size);

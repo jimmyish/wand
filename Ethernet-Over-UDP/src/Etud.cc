@@ -125,9 +125,10 @@ int main(int argc,char **argv)
 	mainloop();
  	// Clean up the control file
 	unlink("/var/run/Etud.ctrl");
-      // Clean up the pid file
-      if (do_daemonise) {
+      	// Clean up the pid file
+      	if (do_daemonise) {
             unlink(pidfile);
-      }
-      
+      	}
+      	// shutdown the interface
+	shutdown_interface();
 }
