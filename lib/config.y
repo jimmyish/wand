@@ -1,40 +1,38 @@
 %{
 #include "config_internal.h"
 %}
-%token TOK_IDENTIFIER
-%token TOK_STRING
+%token <str>TOK_IDENTIFIER
+%token <str>TOK_STRING
 %token TOK_FALSE
 %token TOK_TRUE
 %token TOK_WHITE
 %token TOK_EOL
 %token TOK_UNKNOWN
-%token TOK_INTEGER
+%token <i>TOK_INTEGER
+
+%union {
+	char *str;
+	int i;
+}
+
 %%
 
 config
 : /* Empty */ 
-| config directive
+| config lws TOK_EOL
+| config lws directive TOK_EOL
 | error TOK_EOL { printf("Expected configuration directive\n"); }
 ;
 
 directive
-: lws id lws value lws { set_config_int($2,$4); }
+: TOK_IDENTIFIER lws TOK_INTEGER lws { set_config_int($1,$3); }
+| TOK_IDENTIFIER lws TOK_STRING lws  { set_config_str($1,$3); }
+| TOK_IDENTIFIER lws TOK_TRUE lws    { set_config_int($1,1); }
+| TOK_IDENTIFIER lws TOK_FALSE lws   { set_config_int($1,0); }
 ;
 
 lws
 : /* empty */
 | lws TOK_WHITE { }
-;
-
-id
-: TOK_IDENTIFIER {  $$=$1; }
-;
-
-value
-: TOK_STRING
-| TOK_FALSE
-| TOK_TRUE
-| TOK_WHITE
-| TOK_INTEGER { $$ = $1; }
 ;
 

@@ -15,8 +15,7 @@ typedef struct {
 	void *value;
 	} config_t;
 
-int parse_file(config_t *config,char *filename);
-
+int parse_config(config_t *config,char *filename);
 /* Example:
  *
  * #include <stdio.h>

@@ -1,5 +1,5 @@
-CXXFLAGS=-I../include
-CFLAGS=-I../include -g
+CXXFLAGS=-I../include -Wall
+CFLAGS=-I../include -g -Wall
 TESTS=$(wildcard tests/*.c)
 SUCCESS=$(addsuffix .test,$(basename $(TESTS)))
 
@@ -24,5 +24,5 @@ clean:
 
 %.test: %.o libconfig.a daemons.o debug.o
 	gcc $(CFLAGS) $< -L. -lconfig -lfl debug.o daemons.o -o $(basename $<)
-	$(basename $<) $(basename $<).in 
+	$(basename $<) $(basename $<).in > $(basename $<).test
 

@@ -1,17 +1,12 @@
-SUBDIR=Ethernet-Over-UDP clientsrc wand wansd
+SUBDIR=lib Ethernet-Over-UDP clientsrc wand wansd
 CFLAGS=-Iinclude/ -g -Wall -O3
 CXXFLAGS=-Iinclude/ -g -Wall -O3
 
-all: lib/daemons.o lib/protoverlay.o
+all: 
 	for i in $(SUBDIR); do \
 		$(MAKE) -C $$i all; \
 	done
 
-lib/daemons.o: lib/daemons.c include/daemons.h
-	$(CXX) $(CXXFLAGS) -c lib/daemons.c -o lib/daemons.o
-
-lib/protoverlay.o: lib/protoverlay.c include/protoverlay.h
-	$(CC) $(CFLAGS) -c lib/protoverlay.c -o lib/protoverlay.o
 
 clean:
 	rm -f lib/*.o src/*~ include/*~
