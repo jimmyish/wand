@@ -23,7 +23,10 @@
 
 int load_module(char *s)
 {
-	if(!dlopen(s,RTLD_NOW)) {
+	char filename[1024];
+	strcpy(filename,"/usr/local/lib/wand/");
+	strcat(filename,s);
+	if(!dlopen(filename,RTLD_NOW)) {
 		cout << "Error loading module '" << s << "': " << dlerror() << endl;
 		return 0;
 	}
