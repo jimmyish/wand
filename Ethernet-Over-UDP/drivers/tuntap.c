@@ -34,17 +34,12 @@
 static char tapdevname[32];
 static int fd = -1;
 
-static int tuntap_setup() {
+static int tuntap_setup(char *req_name) {
 
-        struct ifreq ifr;
-	int skfd;        
+       struct ifreq ifr;
 
-    	/* Open a socket so we can ioctl() */
-        /*if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-                perror("socket");
-                exit(1);
-        }
-        */
+	strcpy(tapdevname, req_name);
+
 	printf("tuntap_setup () entered...\n");
 	
 	fd = 0;
@@ -57,18 +52,12 @@ static int tuntap_setup() {
 		memset(&ifr, 0, sizeof(ifr));
 		
 		ifr.ifr_flags = IFF_TAP;
-				            
+		snprintf(ifr.ifr_name, IFNAMSIZ, tapdevname);
+  				            
 		if( (ioctl(fd, TUNSETIFF, (void *) &ifr)) < 0 ){
 		      close(fd);
 		      return -1;
 		}
-		/*
-		if (ioctl (fd, TUNSETNOCSUM, 1) < 0) {
-		  close(fd);
-		  fprintf(stderr, "TUNSETNOCSUM failed\n");
-		}
-		*/
-		strcpy(tapdevname, ifr.ifr_name);
 		
 		fprintf(stderr, "Interface is: %s\n", ifr.ifr_name); 
 		return fd;
@@ -111,7 +100,7 @@ static int tuntap_down(void)
                 exit(1);
         }
          
-        sprintf(ifr.ifr_name, tapdevname);
+        snprintf(ifr.ifr_name, IFNAMSIZ, tapdevname);
 
         /* Set the interface to DOWN */
         ifr.ifr_flags &= ~IFF_UP; /* Set it to ~UP (down ;) */
