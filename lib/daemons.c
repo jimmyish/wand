@@ -10,6 +10,7 @@
 #include <stdio.h> /* for snprintf */
 #include <syslog.h> /* for openlog */
 #include <string.h> /* for strrchr */
+#include <stdlib.h> 
 
 #include "daemons.h"
 
