@@ -77,7 +77,7 @@ void ui_process_callback(int fd)
 			ui_send(fd,"-ERR MAC address does not grok");
 		}
 		ip_t ip;
-		if ((ip=inet_addr(arg2))==-1) {
+		if ((signed int)(ip=inet_addr(arg2))==-1) {
 			ui_send(fd,"-ERR IP address does not grok");
 			return;
 		}
