@@ -87,7 +87,6 @@ void mainloop(void)
 {
 	fd_set rfd2;
 	struct timeval timeout;
-	int foo;
 	
 	timeout.tv_sec = 1;
 	timeout.tv_usec = 0;
@@ -97,23 +96,32 @@ void mainloop(void)
 			"Not Catching Signals!\n" );
 	}
 	while(!endloop) {
-	  rfd2=rfd;
-	  timeout.tv_sec = 1;
-	  foo = select(highestfd+2, &rfd2, NULL, NULL, &timeout);
-	  logger(MOD_IPC, 1, "Select returned %d, errno: %m\n", foo);
-	  for (fd2callback_t::const_iterator i=fd2callback.begin(); 
-	       i!=fd2callback.end(); 
-	       i++) {
+		rfd2=rfd;
+		timeout.tv_sec = 1;
+		if(select(highestfd+2, &rfd2, NULL, NULL, &timeout) < 0){				if(endloop){
+				logger(MOD_IPC, 1, "endloop set, exiting loop\n");
+				break;
+			} else {
+				logger(MOD_IPC, 4, "Select returned an"
+					" error: %s\n", strerror(errno));
+			}
+		} else {
+			for (fd2callback_t::const_iterator 
+					i=fd2callback.begin(); 
+					i!=fd2callback.end(); 
+				       i++) {
 	    
-	    if (FD_ISSET(i->first,&rfd2)) {
-	      i->second(i->first);
-	    }
-	    if (endloop) {
-		logger(MOD_IPC, 1, "endloop set, exiting loop\n");
-	      	break;
-	    }
-	  }
+	    			if (FD_ISSET(i->first,&rfd2)) {
+	      				i->second(i->first);
+	    			}
+	    			if (endloop) {
+					logger(MOD_IPC, 1, "endloop set, "
+						" exiting loop\n");
+	      				break;
+	    			}
+	  		}
 
+		}
 	}
 	logger(MOD_INIT, 1, "Shutting down - breaking out of mainloop\n");
 	// Close file descriptors
