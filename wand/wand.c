@@ -15,6 +15,7 @@ void tellEtud(char *msg)
   int fd=socket(PF_UNIX,SOCK_STREAM,0);
   if (fd<0) { 
     perror("control socket");
+    fprintf(stderr,"Didn't write '%s'",msg);
     return;
  } 
 
@@ -22,7 +23,8 @@ void tellEtud(char *msg)
  strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
 
  if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
-   perror("control connect"); 
+   perror("control connect(/var/run/Etud.ctrl)"); 
+   fprintf(stderr,"Didn't write '%s'",msg);
    close(fd); 
    return;
  }
@@ -41,6 +43,7 @@ char *getword(char **buffer,int *len)
     (*len)--;
   }
   (*buffer)++;
+  (*len)--;
   return tmp;
 }
 
