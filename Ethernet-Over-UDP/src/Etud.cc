@@ -39,7 +39,7 @@ int load_module(char *s)
 
 int main(int arvc,char **argv)
 {
-	char *module;
+	char *module=NULL;
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 	};
