@@ -123,7 +123,7 @@ static int ethertap_down(void)
 	if (fd >= 0) 
 		close(fd);
 
-	return 0;
+	return fd;
 }
 
 
