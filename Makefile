@@ -25,9 +25,6 @@ install: all
 		Ethernet-Over-UDP/drivers/tuntap.so \
 		/usr/local/lib/wand/drivers/tuntap.so
 	install -D --group=root --mode=555 --owner=root \
-		startup.sh \
-		/usr/local/sbin/wand_startup.sh
-	install -D --group=root --mode=555 --owner=root \
 		wand/wand \
 		/usr/local/sbin/wand
 	install -D --group=root --mode=555 --owner=root \

@@ -30,7 +30,7 @@
 extern int modtolevel[];
 char *macaddr=NULL;
 char *ifname=NULL;
-int mtu=0;
+int mtu=1280;
 
 int load_module(char *filename)
 {
@@ -82,7 +82,7 @@ int main(int argc,char **argv)
 	char *cifname=NULL;
 	int cdo_daemonise=1;
 	int cudpport=-1;
-  int cmtu=-1;
+  	int cmtu=-1;
 
 	/* Possible config file options */
 	config_t main_config[] = {
