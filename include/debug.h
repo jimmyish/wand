@@ -71,6 +71,7 @@ void logger(int module, int level, const char *format, ...);
 #define MOD_INIT 3	/* Anything during code setup and initialisation */
 #define MOD_IPC 4	/* wand <-> etud IPC control */
 #define MOD_NETWORK 5	/* Anything related to the networking code */
+#define MOD_IF 6	/* Anything related to the interfaces code */
 
 #ifdef __cplusplus
 }

@@ -13,53 +13,23 @@
 #include <vector>
 #include <map>
 #include <sys/socket.h>
-
-#if 0 /* Too Much Debug Info */
-#define debug_printf(a...) printf(a)
-#else
-#define debug_printf(a...) do {} while(0)
-#endif
+#include "debug.h"
 
 struct ether_header_t {
 	unsigned short int fcs;
         struct ether_header eth;
 };
 
-typedef vector<struct interface_t *> interface_list_t;
-
-static interface_list_t drivers;
-
-
-void add_device(struct interface_t *interface)
-{
-	drivers.push_back(interface);
-	cout << "Registered device: " << interface->name << endl;
-}
-
-struct interface_t *find_interface(char *s)
-{
-	for (interface_list_t::const_iterator i=drivers.begin();
-	     i!=drivers.end();
-	     i++) {
-		if (strcmp((*i)->name,s)==0)
-			return *i;
-	}
-	return NULL;
-}
-
+struct interface_t *driver;
 
 extern "C" {
 
   void register_device(struct interface_t *interface)
   {
-	add_device(interface);
+	driver = interface;
   }
 
 }
-
-typedef map<int,struct interface_t *> fd2interface_t;
-
-static fd2interface_t fd2interface;
 
 const int BUFFERSIZE = 65536;
 
@@ -75,14 +45,14 @@ static void udp_sendto(ip_t ip,char *buffer,int size)
 static void do_read(int fd)
 {
 	static char buffer[BUFFERSIZE];
-	int size=fd2interface[fd]->read(buffer,BUFFERSIZE);
+	int size=driver->read(buffer,BUFFERSIZE);
 	if (size<16) {
-		debug_printf("Runt, Oink! Oink! %i<16\n",size);
+		logger(MOD_IF,4,"Runt, Oink! Oink! %i<16\n",size);
 		return;
 	};
 	ether_t ether(((ether_header_t *)(buffer))->eth.ether_dhost);
 	if (ether.isBroadcast()) {
-		debug_printf("Broadcasting %s\n",ether());
+		logger(MOD_IF,15,"Broadcasting %s\n",ether());
 		for (online_t::const_iterator i=online.begin();
 		     i!=online.end();
 		     i++) 
@@ -91,27 +61,26 @@ static void do_read(int fd)
 	else {
 		ip_t ip = find_ip(ether);
 		if (ip) {
-			debug_printf("Sending %s to %i\n",ether(),ip);
+			logger(MOD_IF,15,"Sending %s to %i\n",ether(),ip);
 			udp_sendto(ip,buffer,size);
 		}
 		else {
-			debug_printf("No match for %s\n",ether());
+			logger(MOD_IF,10,"No match for %s\n",ether());
 		};
 	};
 }
 
-int init_interface(interface_t *interface,int id=1)
+int init_interface(void)
 {
 	int ifd;
-	if ((ifd=interface->setup(id))<0) {
+	if ((ifd=driver->setup()<0)) {
 		return 0;
 	}
 	addRead(ifd,do_read);
-	fd2interface[ifd]=interface;
 	return 1;
 }
 
 void send_interface(char *buffer,int size)
 {
-	fd2interface.begin()->second->write(buffer,size);
+	driver->write(buffer,size);
 }

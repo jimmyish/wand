@@ -39,10 +39,10 @@
 static int fd = -1;
 static int tapdevno;
 
-static int ethertap_setup(unsigned long myid) 
+static int ethertap_setup() 
 {
 	char tapdevice[16];
-	printf("ethertap_setup( %lu ) entered...\n", myid);
+	printf("ethertap_setup() entered...\n");
 
 	fd = 0;	
 	tapdevno = FIRST_TAP_NUMBER;

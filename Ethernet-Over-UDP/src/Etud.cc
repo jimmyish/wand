@@ -39,11 +39,9 @@ int load_module(char *s)
 
 int main(int arvc,char **argv)
 {
-  	char *driver;
 	char *module;
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
-		{ "driver", TYPE_STR|TYPE_NOTNULL, &driver },
 	};
 	if (parse_config(main_config,"/usr/local/etc/wand.conf")) {
 	  logger(MOD_INIT,1,"Bad Config file, giving up\n");
@@ -53,13 +51,7 @@ int main(int arvc,char **argv)
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
-	struct interface_t *interface = find_interface(driver);
-	if ((interface=find_interface(driver))==NULL) {
-		logger(MOD_INIT, 1, "Failed to find driver\n");
-		logger(MOD_INIT, 1, "Aborting...\n");
-		return 1;
-	}
-	if (!init_interface(interface,1)) {
+	if (!init_interface()) {
 		logger(MOD_INIT, 1, "Failed to initialise interface.\n");
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
@@ -67,17 +59,17 @@ int main(int arvc,char **argv)
 	if (udp_start()<0) {
 		logger(MOD_INIT, 1, "Failed to create udp socket.\n");
 		logger(MOD_INIT, 1, "Aborting...\n");
-		interface->down();
+		//device->down();
 		return 1;
 	}
 	if (ui_setup()<0) {
 		logger(MOD_INIT, 1, "Failed to create unix domain socket.\n");
-		interface->down();
+		//interface->down();
 		return 1;
 	}
 	logger(MOD_INIT, 6, "Etud started\n");
-	logger(MOD_INIT, 6, "Using interface driver: %s\n", interface->name);
-	logger(MOD_INIT, 6, " version: %s\n", interface->version);
+	logger(MOD_INIT, 6, "Using interface driver: %s\n", driver->name);
+	logger(MOD_INIT, 6, " version: %s\n", driver->version);
 
 	/* Lets go to the background */
 	logger(MOD_INIT, 7, "Attempting to Daemonise...\n");

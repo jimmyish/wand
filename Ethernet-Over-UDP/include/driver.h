@@ -14,15 +14,16 @@ extern "C" {
 struct interface_t {
 	char *name;
 	char *version;
-	int (*setup)(unsigned long myid);
+	int (*setup)();
 	int (*down)(void);
 	int (*read)(char *frame,int length);
 	int (*write)(char *frame,int length);
 };
 
+extern struct interface_t *driver;
+
 void register_device(struct interface_t *interface_description);
-struct interface_t *find_interface(char *s);
-int init_interface(struct interface_t *interface,int id);
+int init_interface(void);
 void send_interface(char *buffer,int size);
 
 #ifdef __cplusplus
