@@ -45,6 +45,7 @@ static int ethertap_setup(char *req_name)
 {
 	char tapdevice[16];
 	int tapdevno = FIRST_TAP_NUMBER;
+	struct ifreq ifr;
 	
 	logger(MOD_DRV, 15, "ethertap_setup() entered...\n");
 
@@ -71,8 +72,10 @@ static int ethertap_setup(char *req_name)
 		return -1;
 	}
 	
+	sprintf(ifr.ifr_name, "tap%d", tapdevno);
+	sprintf(ifr.ifr_newname, "%s", ifname);
 	
-	if(ioctl(fd, SIOCSIFNAME, ifname, strlen(ifname)) < 0){
+	if(ioctl(fd, SIOCSIFNAME, ifr, sizeof(ifr)) < 0){
 		logger(MOD_DRV, 1, 
 				"Could not rename ethertap interface to %s - %m.\n", 
 				ifname);
