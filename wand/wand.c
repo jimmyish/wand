@@ -251,11 +251,6 @@ int main(int argc,char **argv)
 	int do_daemonise=1;
 	int cdo_daemonise=-1;
 	
-	// Set defaults
-	strcpy(conffile, "/usr/local/etc/wand.conf");
-	strcpy(control_file_path,"/var/run/Etud.ctrl");
-	macaddr[0] = '\0';
-	
 	config_t main_config[] = {
 		{"server", TYPE_STR|TYPE_NOTNULL, &server},
 		{"macaddr", TYPE_STR|TYPE_NOTNULL, &macaddr},	
@@ -263,6 +258,12 @@ int main(int argc,char **argv)
 		{"daemonise", TYPE_STR|TYPE_NOTNULL, &do_daemonise},
 		{NULL, 0, NULL}
 	};
+
+	// Set defaults
+	strcpy(conffile, "/usr/local/etc/wand.conf");
+	strcpy(control_file_path,"/var/run/Etud.ctrl");
+	macaddr[0] = '\0';
+	
 	
 	if(parse_config(main_config, conffile))
 		return 1;
