@@ -96,6 +96,8 @@ void wait_for_event(fd_set &rfd)
 				" error: %s\n", strerror(errno));
 	} while (ret<0 && !endloop);
 
+	rfd = rfd2;
+
 }
 
 void do_events(fd_set rfd)
