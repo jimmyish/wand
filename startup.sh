@@ -28,6 +28,14 @@ if [ "x$ETHERNET" = "x" ]; then
 	exit;
 fi
 
+if [ "x$BROADCAST" = "x" ]; then
+	BROADCAST="192.168.255.255"
+fi
+
+if [ "x$BITLENGTH" = "x" ]; then
+	BITLENGTH="16"
+fi
+
 if [ "x$SERVERS" = "x" ]; then
 	echo No listed wand servers.
 	exit;
@@ -69,7 +77,7 @@ echo " * Configuring ipv4 layer."
 echo "  * Removing stale entries"
 $IP addr flush dev $INTERFACE
 echo "  * Adding $IFADDR"
-$IP addr add $IFADDR/8 broadcast 10.255.255.255 dev $INTERFACE
+$IP addr add $IFADDR/$BITLENGTH broadcast $BROADCAST dev $INTERFACE
 
 echo -n " * Starting wand"
 for i in $SERVERS; do

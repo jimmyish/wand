@@ -4,7 +4,8 @@
 #
 # default: none
 # required: yes
-# IFADDR=10.100.1.1
+#
+# IFADDR=192.168.1.1
 
 # INTERFACE
 # which interface wand will create.
@@ -14,6 +15,23 @@
 # required: no
 #
 # INTERFACE=tap0
+
+# BROADCAST
+# the broadcast for the network
+#
+# default: 192.168.255.255
+# required: no
+#
+# BROADCAST="192.168.255.255
+
+# BITLENGTH
+# The IP address CIDR subnet bitlength
+# eg. the bit after the / in an IP address/mask
+#
+# default: 16
+# required: no
+#
+# BITLENGTH="16"
 
 # ETHERNET
 # the MAC address of the ethernet card on wand

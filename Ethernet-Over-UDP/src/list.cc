@@ -53,6 +53,7 @@ int main(int argc,char **argv)
 	assert(rem_ip(ether)!=false);
 	assert(rem_ip(ether)==false);
 	add_ip(ether,ip_t(0x04030201));
+	add_ip(ether,ip_t(0x04030201));
 	add_ip(ether2,ip_t(0x04030202));
 	assert(find_ip(ether2) == ip_t(0x04030202));
 	assert(find_ip(ether) == ip_t(0x04030201));
