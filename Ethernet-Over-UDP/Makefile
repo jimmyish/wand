@@ -1,12 +1,25 @@
-CFLAGS=-Iinclude/ -I../include/ -g -Wall 
-CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG 
+OS=Linux
+CFLAGS=-Iinclude/ -I../include/ -I/usr/local/include -g -Wall 
+CXXFLAGS=-Iinclude/ -I../include/ -I/usr/local/include -g -Wall
 LDFLAGS=-L../lib
+DRIVERS=drivers/ethertap.so
 
-all: Etud drivers/ethertap.so drivers/tuntap.so test
+ifeq ($(OS),Linux)
+DRIVERS+=drivers/tuntap.so
+LIBS=-ldl -lconfig -lfl
+CFLAGS+=-DLINUX
+CXXFLAGS+=-DLINUX
+else
+LIBS=-lconfig -lfl
+CFLAGS+=-DFREEBSD
+CXXFLAGS+=-DFREEBSD
+endif
+
+all: Etud $(DRIVERS) test
 
 Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
 	src/mainloop.o ../lib/daemons.o ../lib/debug.o
-	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -lconfig -lfl -o Etud
+	$(CXX) $(LDFLAGS) -rdynamic $^ $(LIBS) -o Etud
 
 test: src/list-test
 	@echo Executing tests...
