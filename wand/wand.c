@@ -77,7 +77,7 @@ int main(int argc,char **argv)
 	srand(time(NULL));
 	
 	address.sin_family = AF_INET;
-	address.sin_port = htons(44440);
+	address.sin_port = htons(0);
 	address.sin_addr.s_addr = htonl(INADDR_ANY);
 
 	serveraddr.sin_family = AF_INET;
