@@ -48,6 +48,8 @@ int add_sig_hnd( void )
 	
 	/* Add a handler to SIGTERM */
 	handler.sa_handler = &sig_hnd;
+	handler.sa_flags = SA_RESTART;
+
 	sigemptyset(&handler.sa_mask);
 	if (sigaction(SIGTERM, &handler, NULL) < 0) {
 	  	logger(MOD_INIT, 3 , "Failed to add signal handler:"
