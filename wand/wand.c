@@ -14,7 +14,7 @@
 #include "daemons.h"
 #include "protoverlay.h"
 
-static int testspeed = 0;
+char control_file_path[1024];
 
 void tellEtud(char *msg)
 {
@@ -30,10 +30,10 @@ void tellEtud(char *msg)
   } 
   
   sockname.sun_family = AF_UNIX;
-  strcpy(sockname.sun_path,"/var/run/Etud.ctrl");
+  strcpy(sockname.sun_path,control_file_path);
   
   if (connect(fd,(const struct sockaddr *)&sockname,sizeof(sockname))<0) { 
-    perror("control connect(/var/run/Etud.ctrl)"); 
+    perror("control connect()"); 
     fprintf(stderr,"Didn't write '%s'",msg);
     close(fd); 
     return;
@@ -175,8 +175,15 @@ int main(int argc,char **argv)
 	struct hostent *host;
 
 	if (argc<2) {
-	  printf("%s serverip mac\n",argv[0]);
+	  printf("%s serverip mac [controlfile]\n",argv[0]);
 	  return 1;
+	}
+
+	if (argc>3) {
+		strcpy(control_file_path,argv[3]);
+	}
+	else {
+		strcpy(control_file_path,"/var/run/Etud.ctrl");
 	}
 
 	if (sock<0) {
@@ -184,10 +191,6 @@ int main(int argc,char **argv)
 		return 1;
 	};
 
-	if( argc >= 3 && 0 == strcmp(argv[2],"test" )) {
-	  fprintf( stderr, "TestSpeed on, will update faster\n" );
-	  testspeed++;
-	}
 	srand(time(NULL));
 	
 	address.sin_family = AF_INET;
@@ -228,11 +231,7 @@ int main(int argc,char **argv)
 		  }
 		  else 
 		  {
-		    if( testspeed == 0 ) {
-		      tm.tv_sec=300+rand()%600;
-		    } else {
-		      tm.tv_sec=60+rand()%60;
-		    }
+		    tm.tv_sec=300+rand()%600;
 		  }
 		  flag=1;
 		  sendto(sock,argv[2],strlen(argv[2])+1,0,
