@@ -22,8 +22,8 @@ include/ethertap_cfg.h:
 drivers/%.o: drivers/%.c
 	$(CC) $(CFLAGS) -fPIC -c $^ -o $@
 
-src/%-test: src/%.cc
-	$(CXX) $(CXXFLAGS) -DTEST $^ -o $@
+src/%-test: src/%.cc ../lib/debug.o ../lib/daemons.o
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -DTEST $^ -o $@
 
 drivers/%.so: drivers/%.o
 	ld -x --shared $< -o $@

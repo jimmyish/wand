@@ -13,29 +13,9 @@
 #include <vector>
 #include <algorithm>
 #include "list.h"
+#include "debug.h"
 #include <string>
 #include <list>
-
-
-#ifdef INSANE_LIST_DEBUG
-//#warning Fun!
-#define DPRINTF(x...) fprintf( stderr, x )
-#define DUMP() dump_table( stderr )
-//#warning Fun^2!
-FILE *debfile = NULL;
-#define DPRINTF2(x...) { \
-  debfile = fopen("debug.log", "at"); \
-  fprintf( debfile, x ); \
-  fclose( debfile ); }
-#define DUMP2() { \
-  debfile = fopen("debug.log", "at"); \
-  dump_table( debfile ); \
-  fclose( debfile ); }
-//#warning Fun_over!
-#else
-#define DPRINTF(x...)  
-#define DUMP()
-#endif
 
 online_t online;
 
@@ -46,32 +26,28 @@ bool add_ip(ether_t ether,ip_t ip)
   if( !online.empty() ) {
     online_t::iterator i = online.begin();
     ip_t found = false;
-    DPRINTF( "\nadd_ip(%s, %x) Entered\n", ether(), ip );
-    DUMP();
+    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Entered\n", ether(), ip);
     while( i != online.end() ) { /* Not empty, search for given ether */
       if( ((*i).first) == ether ) { /* match, handle */
 	found = (*i).second;
 	if( found == ip ) { /* ether and ip both match - no change */
-	  DPRINTF( "\nadd_ip() Unchanged (will return f)\n" );
+	  logger(MOD_LIST, 15, "\nadd_ip() Unchanged (will return f)\n");
 	  return false;
 	} else { /* node has changed, update it */
 	  (*i).second = ip;
-	  DPRINTF( "\nadd_ip() Changed (will return T)\n" );
-	  DUMP();
+	  logger(MOD_LIST, 15, "\nadd_ip() Changed (will return T)\n");
 	  return true;
 	}
       }
       ++i;
     }
     /* given ether is not in list, add it */
-    DPRINTF( "\nadd_ip() Was Not In List (will return T)\n" );
+    logger(MOD_LIST, 15, "\nadd_ip() Was Not In List (will return T)\n");
     online.push_back( node_t::pair(ether,ip) );
-    DUMP();
     return true;
   } else { /* List was empty, add the node */
-    DPRINTF( "\nadd_ip(%s, %x) Was Empty (will return T)\n", ether(), ip );
+    logger(MOD_LIST, 15, "\nadd_ip(%s, %x) Was Empty (will return T)\n", ether(), ip);
     online.push_back( node_t::pair(ether,ip) );
-    DUMP();
     return true;
   }
   /* should never get here */
@@ -81,13 +57,11 @@ bool add_ip(ether_t ether,ip_t ip)
 bool rem_ip(ether_t ether)
 {
   if (online.empty() ) {
-    DPRINTF( "rem_ip() Empty\n" );
+    logger(MOD_LIST, 15, "rem_ip() Empty\n");
     /* No need to dump the table -- it's empty :) */
     return false;
   }
-  DPRINTF("\nrem_ip(%s) Entered\n", ether() );
-  DUMP();
-
+  logger(MOD_LIST, 15, "\nrem_ip(%s) Entered\n", ether() );
   online_t::iterator i = online.begin();
   bool found_and_removed = false;
   while( i != online.end() ) {
@@ -98,20 +72,18 @@ bool rem_ip(ether_t ether)
     }
     ++i;
   }
-  DPRINTF( "rem_ip() = %s\n", (found_and_removed)?"TRUE":"FALSE");
-  DUMP();
+  logger(MOD_LIST, 15, "rem_ip() = %s\n", (found_and_removed)?"TRUE":"FALSE");
   return found_and_removed;
 }
 
 ip_t find_ip(ether_t ether)
 {
   if (online.empty() ) {
-    DPRINTF( "find_ip() Empty\n" );
+    logger(MOD_LIST, 15, "find_ip() Empty\n");
     /* No need to dump the table -- it's empty :) */
     return false;
   }
-  DPRINTF("\nfind_ip(%s) Entered\n", ether() );
-  DUMP();
+  logger(MOD_LIST, 15, "\nfind_ip(%s) Entered\n", ether());
 
   online_t::iterator i = online.begin();
   ip_t found = false;
@@ -123,8 +95,7 @@ ip_t find_ip(ether_t ether)
     }
     ++i;
   }
-  DPRINTF( "find_ip() = %x\n", found );
-  DUMP();
+  logger(MOD_LIST, 15, "find_ip() = %x\n", found);
   return found;
 }
 
