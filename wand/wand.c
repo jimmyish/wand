@@ -252,10 +252,9 @@ int main(int argc,char **argv)
 	int cdo_daemonise=-1;
 	
 	config_t main_config[] = {
-		{"server", TYPE_STR|TYPE_NOTNULL, &server},
-		{"macaddr", TYPE_STR|TYPE_NOTNULL, &macaddr},	
-		{"controlfile", TYPE_STR|TYPE_NOTNULL, &control_file_path},
-		{"daemonise", TYPE_STR|TYPE_NOTNULL, &do_daemonise},
+		{"server", TYPE_STR|TYPE_NULL, &server},
+		{"controlfile", TYPE_STR|TYPE_NULL, &control_file_path},
+		{"daemonise", TYPE_STR|TYPE_NULL, &do_daemonise},
 		{NULL, 0, NULL}
 	};
 
