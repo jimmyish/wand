@@ -1,15 +1,24 @@
+#ifndef LINUX
+#include <sys/types.h>
+#else
+#include <malloc.h>
+#endif
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <string.h>
+#include <ctype.h>
 #include <time.h>
 #include <unistd.h>
 #include <syslog.h>
 #include <signal.h>
 #include <stdlib.h>
+#include <postgresql/libpq-fe.h>
 #include "daemons.h"
+
+
+PGconn *conn = 0;
 
 struct tMapping {
   struct tMapping *next;
@@ -29,15 +38,23 @@ struct tMapping *findMapping(char *mac) {
 void printlist()
 {
   struct tMapping *entry = userList;
+  FILE *logfile = fopen("/var/tmp/wand_table","w");  
   
   syslog(LOG_DEBUG, "Current Time: %d\n", (int) time(NULL));
+  fprintf(logfile, "Current Time: %d\n", (int) time(NULL));
+  
   syslog(LOG_DEBUG, "MAC ADDR Last Seen\n");
+  fprintf(logfile, "MAC ADDR Last Seen\n");
+  
   
   for(entry = userList; entry; entry=entry->next) {
     syslog(LOG_DEBUG, "%s %s %d\n", entry->mac, 
 	   inet_ntoa(entry->address.sin_addr), (int) entry->lastseen);
+    fprintf(logfile, "%s %s %d\n", entry->mac,
+  	   inet_ntoa(entry->address.sin_addr), (int) entry->lastseen);
   }
-  
+
+  fclose(logfile);
   return;
 }
 
@@ -67,9 +84,15 @@ int addrcmp(struct sockaddr_in a,struct sockaddr_in b)
  */
 struct tMapping *dopacket(char *buffer,int length,struct sockaddr_in address)
 {
-  struct tMapping *entry = findMapping(buffer);
+  struct tMapping *entry;
+  char sqlstring[128];
   int update = 0;
-  
+  PGresult *res;
+  char *cp;
+  for (cp=buffer;*cp;cp++)
+	  *cp=tolower(*cp);
+  entry = findMapping(buffer);
+  bzero(sqlstring,128);
   if (!entry) {
     update = 1;
     entry = malloc(sizeof(struct tMapping));
@@ -87,6 +110,30 @@ struct tMapping *dopacket(char *buffer,int length,struct sockaddr_in address)
 	 entry->mac,
 	 inet_ntoa(entry->address.sin_addr)
 	 );
+  
+  if (conn != 0) {
+    snprintf(sqlstring, 128, "DELETE FROM wand WHERE mac = '%s'",entry->mac);
+    res = PQexec(conn, sqlstring);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+      syslog(LOG_DEBUG, "ERROR inserting into wand database");
+      PQclear(res);
+      PQfinish(conn);
+      conn = 0;
+    } else {
+    
+    snprintf(sqlstring, 128, "INSERT INTO wand  (mac,ip) VALUES ('%s','%s')",entry->mac,inet_ntoa(entry->address.sin_addr));
+    res = PQexec(conn,sqlstring);
+    if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+       syslog(LOG_DEBUG, "ERROR inserting into wand database");
+       PQclear(res);
+       PQfinish(conn);
+       conn = 0;
+    }
+    }
+
+     
+  }
+  
   return (!update) ? entry : NULL;
 }
 
@@ -101,9 +148,11 @@ void sendupdate(int fd,struct tMapping *target)
 {
   char buffer[1024];
   char *b=buffer;
+  char sqlstring[128];
   struct tMapping *entry=NULL;
   struct tMapping *last=NULL;
-  
+  PGresult   *res;
+
   /* Build the packet */
   for (entry = userList; entry; entry=entry->next) {
     /* Free expired entries after an hour */
@@ -112,6 +161,19 @@ void sendupdate(int fd,struct tMapping *target)
       
       syslog(LOG_DEBUG,"Expired: '%s' (%s)", entry->mac,
 	     inet_ntoa(entry->address.sin_addr));
+
+      /* expire from SQL db as well */
+      if (!conn) {
+	snprintf(sqlstring, 128, "DELETE FROM wand WHERE mac = '%s'",entry->mac);
+	res = PQexec(conn, sqlstring);
+        if (!res || PQresultStatus(res) != PGRES_COMMAND_OK) {
+	  syslog(LOG_DEBUG, "ERROR deleting from wand database");
+	  PQclear(res);
+	 // PQfinish(conn);
+	 // conn = 0;
+	}
+      
+      }
       
       entry2=entry->next;
       free(entry->mac);	
@@ -175,6 +237,17 @@ int main(int argc,char **argv)
   put_pid("wansd");
   openlog(argv[0],LOG_PID,LOG_DAEMON);
   syslog(LOG_NOTICE,"%s started.",argv[0]);
+ 
+/* open database connetion */
+  conn = PQconnectdb("hostaddr=127.0.0.1 dbname=metanet user=www-data password=www-data");
+  if (PQstatus(conn) == CONNECTION_BAD) {
+    syslog(LOG_DEBUG, "Connection to database '%s' failed.\n", "metanet");
+    syslog(LOG_DEBUG, "%s", PQerrorMessage(conn));
+    PQfinish(conn);
+    conn = 0;
+  }
+
+ 
   
   for (;;) {
     int addrlen=sizeof(address);

@@ -1,11 +1,7 @@
-#ifndef LINUX
-#include <sys/types.h>
-#else
-#include <malloc.h>
-#endif
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <malloc.h>
 #include <stdio.h>
 #include <string.h>
 #include <time.h>
