@@ -40,7 +40,7 @@ static int ethertap_setup(unsigned long myid) {
 	};
 
 	fd = 0;	
-	tapdevno = 2;
+	tapdevno = 0;
 
 	
 	memcpy(hwaddr, &(myid)+(6-sizeof(myid)), 4);

@@ -22,6 +22,7 @@ int main(int argc,char **argv)
 	}
 	if (write(fd,argv[1],strlen(argv[1]))!=strlen(argv[1]) || write(fd,"\r\n",2)!=2)
 		return 2;
+	alarm(2);
 	while ((size=read(fd,buf,1024))>1)
 		write(1,buf,size);
 }

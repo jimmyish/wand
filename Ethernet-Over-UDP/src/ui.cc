@@ -92,7 +92,7 @@ void ui_process_callback(int fd)
 
 int ui_send(int sock,char *msg)
 {
-	if (write(sock,msg,strlen(msg))!=strlen(msg))
+	if (write(sock,msg,strlen(msg))!=(int)strlen(msg))
 		return -1;
 	return (write(sock,"\r\n",2)==2) ? 0 : -1;
 }

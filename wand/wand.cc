@@ -61,25 +61,10 @@ class wand_t : public filedescriptor_t{
 				return false;
 			}
 			else {
-				if (!strncasecmp(line,4,"add ")) {
-					ip_t ip;
-					
-				}
 			}
 			return false;
 		}
 		void burstStatus() {
-			for(online_t::const_iterator i=online.begin();
-				i!=online.end();
-				i++) {
-				write("add ");
-				write(i->first());
-				write(" ");
-				struct sockaddr_in sockname;
-				sockname.sin_addr.s_addr=i->second;
-				write(inet_ntoa(sockname.sin_addr));
-				write("\n\r");
-			}	
 		}
 };
 
