@@ -39,6 +39,7 @@ case "$1" in
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
 	
 	ifup ${IFADDR}
+  ${IP} link set ${IFADDR} mtu 1280
 	echo "."
 	;;
   stop)
@@ -75,6 +76,7 @@ case "$1" in
 	sleep 1
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
 	ifup ${IFADDR}
+  ${IP} link set ${IFADDR} mtu 1280
 	echo "."
 	;;
   *)
