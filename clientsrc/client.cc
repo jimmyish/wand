@@ -5,16 +5,21 @@
  */
 
 #include <sys/socket.h>
+#include <sys/types.h> /* for select */
+#include <sys/time.h> /* for select */
 #include <sys/un.h>
 #include <stdio.h>
-#include <unistd.h> /* for getopt */
+#include <ctype.h> /* for isspace */
+#include <stdlib.h> /* for malloc */
+#include <unistd.h> /* for getopt, select */
 #include <getopt.h> /* for getopt */
 
 void usage( char *pname ) 
 {
-	printf( "Usage:\n%s [-h|-v|-c|-l|-a mac ip|-d mac]\n",pname);
-	printf( 
-"Where:\n\
+	printf( "\
+Usage:\n\
+%s [-h|-v|-c|-l|-a mac ip|-d mac]\n\
+Where:\n\
 	-h	This Help Screen\n\
 	-v	Query for the version of Etud\n\
 	-c	Conversation mode, enter Queries interactively<tm>\n\
@@ -26,7 +31,7 @@ void usage( char *pname )
 MAC address must be in the format 00:aa:bb:cc:dd:ee, using either : or -\n\
 as the delimiter.\n\
 IP address must be in the format 1.127.255.0, using only . as the delimiter\n\
-" );
+",pname);
 	exit(0);
 }              
 
@@ -55,11 +60,99 @@ int original_main( int argc, char **argv )
 	return 0;
 }
 
+/* Wrapper around select() and read() 
+ * select on the given fd for the given timeout period; if the timeout
+ * expires, return zero. otherwise, returns the number of bytes
+ * written to the given buffer, not more than bufsize. If an error occurs,
+ * either terminate execution or return negative.
+ * yes, it is possible to read 0 bytes, which will get mistaken for a
+ * timeout. Suggestions Welcome.
+ */
+int select_on( int fd, char *buffer, int bufsize, struct timeval *timeout )
+{
+	struct timeval *to = NULL;
+	fd_set readfds;
+	int retval = 0;
+
+	if( !buffer || bufsize <= 0 )
+		return -2; /* EStupid */
+
+	/* select() tends to alter timeout, so make a copy of it */
+	if( timeout != NULL ) {
+		if( NULL == ( to = (struct timeval *)malloc( sizeof( struct
+		    timeval ) ) ) ) {
+			fprintf( stderr, "Out of Memory in select_on!\n" );
+			exit( 1 );
+		}
+		memcpy( to, timeout, sizeof( struct timeval ) );
+	}
+
+	FD_ZERO( &readfds );
+	FD_SET( fd, &readfds );
+
+	if( 0 > (retval = select( fd+1, &readfds, NULL, NULL, to ) ) ) {
+		perror("select_on: select");
+		exit( 1 );
+	}
+
+	if( to != NULL ) free( to );
+	if( 0 == retval )
+		return 0;
+
+	if( !FD_ISSET( fd, &readfds ) ) {
+		printf( "fd not set true. Err... I don't want to know what "
+			"went wrong.\n" );
+		return -3;
+	}
+
+	if( 0 > (retval = read( fd, buffer, bufsize )) ) {
+		perror("select_on: read");
+		exit( 1 );
+	}
+	buffer[ retval ] = '\0';
+	return retval;
+}
+
+/* displays a reply to the screen. Pretty simple/crude 
+ * return 0 to continue iterating, or negative to terminate the while.
+ */
+int display_reply( char *buffer ) 
+{
+	int size = strlen( buffer );
+	/* Inelegant Hack - remove trailing ctype-ish space */
+	while( size > 1 && 
+	       isspace( buffer[ size-1 ] ) ) {
+		buffer[ size-1 ] = '\0';
+		size--;
+	}
+	
+	if( strlen( buffer ) <= 1 ) {
+		printf("Boring / Blank line from server. no fun.\n");
+		return 0;
+	}
+
+	if( buffer[0] == '+' ) { /* Continuation */
+		printf( "\"%s\"\n", buffer+1 );
+		return 0;
+	} else if( buffer[0] == '-' ) { /* Last */
+		printf( "'%s'\n", buffer+1 );
+		return -1;
+	} else { /* malformed */
+		printf( "Unexpected reply from server, \"%s\"\n",
+			buffer );
+		return 0;
+	}
+	printf( "Shouldn't get here." );
+	return 0;
+}
+
 int send_request( char *one, char *two, char *three )
 {
 	char buffer[512];
 	int size;
+	int retval;
 	struct sockaddr_un sockname;
+	struct timeval timeout;
 	int fd=socket(PF_UNIX,SOCK_STREAM,0);
 
 	if (fd<0) {
@@ -81,10 +174,36 @@ int send_request( char *one, char *two, char *three )
 	if( write(fd,buffer,strlen(buffer)) != (signed)strlen(buffer) )
 		return 2;
 
-	alarm(2);
-	while ((size=read(fd,buffer,512))>1)
-		write(1,buffer,size);
-	
+	/* two second timeout between packets today */
+	timeout.tv_usec = 0;
+	timeout.tv_sec = 2;
+
+	while( (size=select_on(fd,buffer,512,&timeout))>0 ) {
+		char *ptr = buffer;
+		char *prev = buffer;
+		while( *ptr ) {
+			if( *ptr == '\n' || *ptr == '\r' ) {
+				*ptr = '\0';
+				ptr++;
+				while(*ptr && (*ptr == '\n' || *ptr == '\r' )) {
+					ptr++;
+				}
+				/* so, now prev points to start of last
+				 * line; and ptr points to start of next 
+				 * line - parse and iterate
+				 */
+				retval = display_reply( prev );
+				if( retval < 0 ) {
+					close( fd );
+					return 0;
+				}
+				prev = ptr;
+			} else {
+				ptr++;
+			}
+		}
+	}
+	close( fd );
 	return 0;
 }
 
