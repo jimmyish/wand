@@ -1,3 +1,9 @@
+/* Wand Project - Ethernet Over UDP
+ * $Id$
+ * Licensed under the GPL, see file COPYING in the top level for more
+ * details.
+ */
+
 #include "driver.h"
 #include "list.h"
 #include "udp.h"
@@ -102,4 +108,4 @@ int init_interface(interface_t *interface,int id=1)
 void send_interface(char *buffer,int size)
 {
 	fd2interface.begin()->second->write(buffer,size);
-};
+}

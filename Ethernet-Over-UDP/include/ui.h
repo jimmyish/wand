@@ -1,3 +1,9 @@
+/* Wand Project - Ethernet Over UDP
+ * $Id$
+ * Licensed under the GPL, see file COPYING in the top level for more
+ * details.
+ */
+
 #ifndef UI_H
 #define UI_H
 

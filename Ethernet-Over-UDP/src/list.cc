@@ -1,3 +1,9 @@
+/* Wand Project - Ethernet Over UDP
+ * $Id$
+ * Licensed under the GPL, see file COPYING in the top level for more
+ * details.
+ */
+
 /*
  * This file maintains a list of who is connected to the network, their
  * "ethernet" address and their "ip" address.

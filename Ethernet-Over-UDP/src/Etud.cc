@@ -1,3 +1,9 @@
+/* Wand Project - Ethernet Over UDP
+ * $Id$
+ * Licensed under the GPL, see file COPYING in the top level for more
+ * details.
+ */
+
 #include <sys/time.h> /* for select */
 #include <sys/types.h> /* for select */
 #include <net/ethernet.h> /* for ether_header and ETH_ALEN */

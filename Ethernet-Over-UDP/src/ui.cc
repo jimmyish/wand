@@ -1,3 +1,9 @@
+/* Wand Project - Ethernet Over UDP
+ * $Id$
+ * Licensed under the GPL, see file COPYING in the top level for more
+ * details.
+ */
+
 #include <sys/types.h> /* for socket */
 #include <sys/socket.h> /* for socket */
 #include <netinet/in.h>
