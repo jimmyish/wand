@@ -26,11 +26,22 @@ struct tMapping *findMapping(char *mac) {
 
 int addrcmp(struct sockaddr_in a,struct sockaddr_in b)
 {
-	if (a.sin_addr.s_addr != b.sin_addr.s_addr) {
-		return a.sin_addr.s_addr-b.sin_addr.s_addr;
+	if (a.sin_addr.s_addr < b.sin_addr.s_addr) {
+		return -1;
+	}
+	else if (a.sin_addr.s_addr == b.sin_addr.s_addr) {
+		if (a.sin_port < b.sin_port) {
+			return -1;
+		}
+		else if (a.sin_port == b.sin_port) {
+			return 0;
+		}
+		else {
+			return +1;
+		}
 	}
 	else {
-		return a.sin_port-b.sin_port;
+		return +1;
 	}
 }
 

@@ -38,3 +38,26 @@ ip_t find_ip(ether_t ether)
 	return online[ether];
 }
 
+#ifdef TEST
+#include <assert.h>
+
+int main(int argc,char **argv)
+{
+	ether_t ether;
+	ether_t ether2;
+	ether.parse("01:02:03:04:05:06");
+	ether.parse("01:02:03:04:05:07");
+	assert(rem_ip(ether)==false);
+	add_ip(ether,ip_t(0x04030201));
+	assert(find_ip(ether) == ip_t(0x04030201));
+	assert(rem_ip(ether)!=false);
+	assert(rem_ip(ether)==false);
+	add_ip(ether,ip_t(0x04030201));
+	add_ip(ether2,ip_t(0x04030202));
+	assert(find_ip(ether) == ip_t(0x04030201));
+	assert(find_ip(ether2) == ip_t(0x04030202));
+	assert(rem_ip(ether)!=false);
+	assert(rem_ip(ether2)!=false);
+}
+#endif
+
