@@ -10,6 +10,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include "../Ethernet-Over-UDP/include/daemons.h"
 
 void tellEtud(char *msg)
 {
@@ -100,6 +101,10 @@ int main(int argc,char **argv)
 		perror("bind");
 		return 1;
 	}
+	
+	daemonise();
+	put_pid("wand");
+	
 	tm.tv_sec=0;
 	tm.tv_usec=0;
 	for (;;) {
