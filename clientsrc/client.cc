@@ -28,6 +28,8 @@ Where:\n\
 	-R	Be RUDE - for testing ONLY\n\
 	-c	Conversation mode, enter Queries interactively<tm>\n\
 	-l	Query for a list of MAC addresses and IP addresses\n\
+	-m  Query for the MAC address of the Etud interface\n
+	-p  Query for the port of the Etud daemon\n
 	-a	Query to add the given MAC address and IP address\n\
 		Mutually exclusive with -d\n\
 	-d	Query to delete the given MAC address\n\
@@ -164,6 +166,14 @@ int main( int argc, char *argv[] )
 				return 1;
 			}
 			any_del++;
+			break;
+		case 'm':
+			any_arg++;
+			send_request( "GETMAC", NULL, NULL );
+			break;
+		case 'p':
+			any_arg++;
+			send_request( "GETPORT", NULL, NULL );
 			break;
 		default:
 			fprintf( stderr, "Unknown or unrecognised "
