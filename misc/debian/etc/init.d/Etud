@@ -7,15 +7,12 @@
 # Version:	$Id$
 #
 ETUDCONF=/usr/local/etc/etud.conf
-PIDFILE=/var/run/Etud.pid
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/local/sbin/Etud
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 ARGS="-f $ETUDCONF -p $PIDFILE"
-IFADDR="wan0"
 NAME=Etud
 DESC="EtherneT over Udp Daemon"
 IP=/bin/ip
-
 
 # Check for the Etud configuration file
 if [ ! -f ${ETUDCONF} ]; then
@@ -23,13 +20,29 @@ if [ ! -f ${ETUDCONF} ]; then
         exit
 fi
 
+# Parameter defaults
+IFNAME=wan0
+CTRLFILE=/var/run/Etud.ctrl
+PIDFILE=/var/run/Etud.pid
+# Retrieve the real values from the config file if they exist
+while read parameter value
+do
+	if [ "$parameter" == "pidfile" ]; then
+                PIDFILE=`echo "$value" | tr -d '"'`
+        elif [ "$parameter" == "ctrlfile" ]; then
+		CTRLFILE=`echo "$value" | tr -d '"'`
+	elif [ "$parameter" == "ifname" ]; then
+		IFNAME=`echo "$value" | tr -d '"'`
+	fi
+done < $ETUDCONF
+
 test -x $DAEMON || exit 0
 
 set -e
 
 case "$1" in
   start)
-	[ -e /var/run/Etud.ctrl ] && {
+	[ -e $CTRLFILE ] && {
         	echo Control file exists, Etud already running?
 		exit 1;
 	}
@@ -38,12 +51,12 @@ case "$1" in
 	echo  "Starting $DESC: $NAME"
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
 	
-	ifup ${IFADDR}
+	ifup ${IFNAME}
 	echo "."
 	;;
   stop)
 	echo -n "Stopping $DESC: $NAME "
-	ifdown ${IFADDR}
+	ifdown ${IFNAME}
 	start-stop-daemon --stop --quiet --pidfile $PIDFILE  \
 		--exec $DAEMON -- $ARGS
 	echo "."
@@ -69,12 +82,12 @@ case "$1" in
 	#
 
 	echo -n "Restarting $DESC: $NAME"
-	ifdown ${IFADDR}
+	ifdown ${IFNAME}
 	start-stop-daemon --stop --quiet --pidfile \
 		$PIDFILE --exec $DAEMON -- $ARGS
 	sleep 1
 	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
-	ifup ${IFADDR}
+	ifup ${IFNAME}
 	echo "."
 	;;
   *)

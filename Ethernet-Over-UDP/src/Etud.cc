@@ -96,7 +96,7 @@ int main(int argc,char **argv)
 		{ "pidfile", TYPE_STR|TYPE_NULL, &pidfile },
 		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
 		{ "ctrlfile", TYPE_STR|TYPE_NULL, &ctrlfile },
-    		{ "mtu", TYPE_INT|TYPE_NULL, &mtu },
+ 		{ "mtu", TYPE_INT|TYPE_NULL, &mtu },
 		{ "debug_default", TYPE_INT|TYPE_NULL, &default_log_level},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
 		{ "debug_MOD_IF", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IF]},

@@ -7,18 +7,27 @@
 # Version:	$Id$
 #
 
-PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+WAND_CONF=/usr/local/etc/wand.conf
 DAEMON=/usr/local/sbin/wand
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 NAME=wand
 DESC="Wide Area Network Daemon"
-WAND_CONF=/usr/local/etc/wand.conf
-PID_FILE=/var/run/$NAME.pid
-
 ARGS=" -f ${WAND_CONF} -p ${PID_FILE} "
+
 if [ ! -f ${WAND_CONF} ]; then
         echo Could not find configuration file ${WAND_CONF}
         exit
 fi
+
+# Set Parameter Defautls
+PID_FILE=/var/run/$NAME.pid
+# Retrieve from the config file
+while read parameter value
+do
+	if [ "$parameter" == "pidfile" ]; then
+        	PID_FILE=`echo "$value" | tr -d '"'`
+        fi
+done < $WAND_CONF
 
 test -x $DAEMON || exit 0
 
