@@ -1,5 +1,8 @@
 %{
 #include "config_internal.h"
+#include <stdio.h>
+extern int yylex();
+void yyerror(const char *);
 %}
 %token <str>TOK_IDENTIFIER
 %token <str>TOK_STRING
@@ -35,4 +38,7 @@ lws
 : /* empty */
 | lws TOK_WHITE { }
 ;
+
+%%
+
 
