@@ -1,5 +1,5 @@
-CFLAGS=-Iinclude/ -g -Wall
-CXXFLAGS=-Iinclude/ -g -Wall
+CFLAGS=-Iinclude/ -g -Wall -O3
+CXXFLAGS=-Iinclude/ -g -Wall -O3
 
 all: Etud drivers/ethertap.so
 
