@@ -126,7 +126,7 @@ static int parse(char *line,char **argv,int argc)
 		if (*line == ' ') {
 			*line='\0';
 			arg++;
-			argv[arg] = line;
+			argv[arg] = line+1;
 		}
 		line++;
 	}
