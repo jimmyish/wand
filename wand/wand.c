@@ -146,7 +146,7 @@ void clearOldEntries(void)
 			}
 		}
 		else {
-			temp->flag=1; /* old */
+			tmp->flag=1; /* old */
 			tmp2=tmp;
 		}
 		tmp=next;
