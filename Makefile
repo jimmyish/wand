@@ -34,11 +34,11 @@ install: all
 		wansd/wansd \
 		/usr/local/sbin/wansd
 	install -D --group=root --mode=644 --owner=root \
-		wand.conf.original \
-		/usr/local/etc/wand.$$(hostname).conf.original
-	install -D --group=root --mode=644 --owner=root \
 		misc/sample/etud.conf \
 		/usr/local/etc/etud.conf.sample
+	install -D --group=root --mode=644 --owner=root \
+		misc/sample/wand.conf \
+		/usr/local/etc/wand.conf.sample
 	install -D --group=root --mode=555 --owner=root \
 		clientsrc/client \
 		/usr/local/sbin/Etudctl
