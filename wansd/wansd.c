@@ -75,7 +75,7 @@ struct tMapping *dopacket(char *buffer,int length,struct sockaddr_in address)
     entry = malloc(sizeof(struct tMapping));
     entry->next = userList;
     userList=entry;
-    entry->mac=strdup(buffer);
+    entry->mac=strndup(buffer,6*2+5);
   }
   if (addrcmp(entry->address,address)!=0) {
     entry->address = address;
@@ -192,6 +192,7 @@ int main(int argc,char **argv)
     } else {
       errors=0;
     }
+    buffer[sizeof(buffer)-1]='\0';
     sendupdate(sock,dopacket(buffer,data,address));
   };
   return 0;
