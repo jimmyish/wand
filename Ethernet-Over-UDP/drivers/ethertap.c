@@ -13,6 +13,12 @@
  *
  * TODO:
  *  Restore all flags on link 'down'.
+ * 
+ * Some helpfull (but damn hard to find and remember after a few months !)
+ * man pages:
+ * 
+ * man 7 netdevice  - ioctl's and ifreq struct decscriptions for linux 
+ *                    devices
  */
  
 #include <stdio.h>
