@@ -133,5 +133,5 @@ int main(int argc,char **argv)
       	// shutdown the interface
 	//syslog(LOG_DAEMON,"Attempting to shutdown interfacce\n");
 	//logger(MOD_INIT, 8, "Attempting to shutdown interface\n");
-	shutdown_interface();
+	//shutdown_interface();
 }
