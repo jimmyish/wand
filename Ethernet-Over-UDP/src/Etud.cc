@@ -14,6 +14,7 @@
 #include <fcntl.h> /* for open */
 #include <getopt.h> /* for parsing command line options */
 #include <syslog.h>
+#include <stdio.h>
 
 #include "list.h"
 #include "driver.h"
@@ -56,16 +57,21 @@ void usage(const char *prog) {
 
 int main(int argc,char **argv)
 {
+	char buf[1024];
+	
 	/* Actual configuration options */
 	int do_daemonise=1;
 	char *module=NULL;
 	char *conffile=NULL;
 	char *pidfile="Etud";
+	char *ctrlfile=NULL;
 	
 	/* Temporary options read from the command line */
 	char *cmacaddr=NULL;
 	char *cmodule=NULL;
 	char *cpidfile=NULL;
+	char *cctrlfile=NULL;
+	char *cifname=NULL;
 	int cdo_daemonise=1;
 	int cudpport=-1;
 	
@@ -77,6 +83,7 @@ int main(int argc,char **argv)
 		{ "ifname", TYPE_STR|TYPE_NULL, &ifname },
 		{ "pidfile", TYPE_STR|TYPE_NULL, &pidfile },
 		{ "udpport", TYPE_INT|TYPE_NULL, &udpport },
+		{ "ctrlfile", TYPE_STR|TYPE_NULL, &ctrlfile },
 		{ "debug_MOD_INIT", TYPE_INT|TYPE_NULL, &modtolevel[MOD_INIT]},
 		{ "debug_MOD_IPC", TYPE_INT|TYPE_NULL, &modtolevel[MOD_IPC]},
 		{ "debug_MOD_DRIVERS", TYPE_INT|TYPE_NULL, &modtolevel[MOD_DRIVERS]},
@@ -85,8 +92,11 @@ int main(int argc,char **argv)
 
 	// Parse command line arguments
 	char ch;
-	while((ch = getopt(argc, argv, "dDf:hi:l:m:p:")) != -1){
+	while((ch = getopt(argc, argv, "c:dDf:hi:l:m:p:")) != -1){
 	switch(ch){	
+			case 'c':
+				cctrlfile = strdup(optarg);
+				break;
 			case 'd':
 				cmodule = strdup(optarg);
 				break;
@@ -101,7 +111,7 @@ int main(int argc,char **argv)
 				return 0;
 				break;
 			case 'i':
-				ifname = strdup(optarg);
+				cifname = strdup(optarg);
 				break;
 			case 'l':
 				cudpport = atoi(optarg);
@@ -141,13 +151,22 @@ int main(int argc,char **argv)
 		do_daemonise = 0;
 	if (cudpport != -1)
 		udpport = cudpport;
+	if (cctrlfile != NULL) 
+		ctrlfile = strdup(cctrlfile);
+	if (cifname != NULL)
+		ifname = strdup(cifname);
 		
 	/* Check that a MAC address has been specified */
 	if (macaddr == NULL) {
 		logger(MOD_INIT, 1, "No MAC Address specified!\n");
 		return 1;
 	}
-	
+	/* Check that a control file has been specified */
+	if (ctrlfile == NULL) {
+		sprintf(buf, "/var/run/Etud.%s.ctrl", ifname);
+		ctrlfile = strdup(buf);
+	}
+
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
 	if (!load_module(module)) {
 		logger(MOD_INIT, 1, "Aborting...\n");
