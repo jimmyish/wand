@@ -183,6 +183,7 @@ int main(int argc,char **argv)
 	
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
 	if (!load_module(module)) {
+		logger(MOD_INIT, 1, "Failed to load driver.\n");
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
@@ -205,6 +206,7 @@ int main(int argc,char **argv)
 	logger(MOD_INIT, 15, "UDP started, about to start UNIX domain socket\n");
 	if (ui_setup()<0) {
 		logger(MOD_INIT, 1, "Failed to create unix domain socket.\n");
+		logger(MOD_INIT, 1, "Aborting...\n");
 		shutdown_interface();
 		return 1;
 	}
