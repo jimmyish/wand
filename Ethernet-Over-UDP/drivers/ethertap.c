@@ -40,6 +40,7 @@
 
 static int fd = -1;
 char *ifname;
+char old_ifname[IFNAMSIZ];
 
 static int ethertap_setup(char *req_name) 
 {
@@ -80,14 +81,18 @@ static int ethertap_setup(char *req_name)
 		logger(MOD_DRIVERS, 1, "Can't open ethertap device, aborting.\n");
 		return -1;
 	}
+
+
+	snprintf(old_ifname, IFNAMSIZ, "tap%d", tapdevno);
+
 	
 	snprintf(ifr.ifr_name, IFNAMSIZ, "tap%d", tapdevno);
 	snprintf(ifr.ifr_newname, IFNAMSIZ, "%s", ifname);
 	
 	if(ioctl(skfd, SIOCSIFNAME, &ifr) < 0){
 		logger(MOD_DRIVERS, 1, 
-				"Could not rename ethertap interface to %s - %m.\n", 
-				ifname);
+			"Could not rename ethertap interface to %s - %s.\n", 
+			ifname, strerror(errno));
 		return -1;
 	}
 
@@ -105,8 +110,10 @@ static int ethertap_down(void)
 
     	/* Open a socket so we can ioctl() */
         if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-                perror("socket");
-                exit(1);
+                logger(MOD_DRIVERS, 7, 
+			"Couldn't create socket for shutdown - %s\n",
+			strerror(errno));
+                return -1;
         }
 	
    	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
@@ -115,14 +122,29 @@ static int ethertap_down(void)
 	/* Set the interface to DOWN */
 	ifr.ifr_flags &= ~IFF_UP; /* Set it to ~UP (down ;) */
    	if (ioctl(skfd, SIOCSIFFLAGS, &ifr) < 0) {
-	       	perror("SIOCSIFFLAGS");
+	       	logger(MOD_DRIVERS, 7, "Couldn't set interface down - %s\n",
+			strerror(errno));
         	return -1;
     	}
+
+	snprintf(ifr.ifr_name, IFNAMSIZ, "%s", ifname);
+	snprintf(ifr.ifr_newname, IFNAMSIZ, "%s", old_ifname);
+	
+	if(ioctl(skfd, SIOCSIFNAME, &ifr) < 0){
+		logger(MOD_DRIVERS, 1, 
+			"Could not rename ethertap interface to %s - %s.\n", 
+			ifname, strerror(errno));
+		return -1;
+	}
+
 
 	close(skfd);		
 	if (fd >= 0) 
 		close(fd);
 
+	logger(MOD_DRIVERS, 15, "Interface %s renamed to %s and shutdown.\n",
+			ifname, old_ifname);
+	
 	return fd;
 }
 
