@@ -23,6 +23,9 @@ install: all
 	@install -D --group=root --mode=555 --owner=root \
 		Ethernet-Over-UDP/drivers/ethertap.so \
 		/usr/local/lib/wand/drivers/ethertap.so && echo Done
+	@install -D --group=root --mode=555 --owner=root \
+		Ethernet-Over-UDP/drivers/tuntap.so \
+		/usr/local/lib/wand/drivers/tuntap.so && echo Done
 	@echo -n Installing wand_startup.sh...
 	@install -D --group=root --mode=555 --owner=root \
 		startup.sh \
