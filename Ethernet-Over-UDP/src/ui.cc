@@ -81,8 +81,11 @@ void ui_process_callback(int fd)
 			ui_send(fd,"-ERR IP address does not grok\r\n");
 			return;
 		}
-		add_ip(ether,ip);
-		ui_send(fd,"-OK added\r\n");
+		if( add_ip(ether,ip) ) {
+		  ui_send(fd,"-OK updated\r\n");
+		} else {
+		  ui_send(fd,"-OK no change\r\n");
+		}
 		return;
 	}
 

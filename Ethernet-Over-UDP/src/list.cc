@@ -56,9 +56,9 @@ bool add_ip(ether_t ether,ip_t ip)
 	  return false;
 	} else { /* node has changed, update it */
 	  (*i).second = ip;
-	  DPRINTF( "\nadd_ip() Changed (will return f)\n" );
+	  DPRINTF( "\nadd_ip() Changed (will return T)\n" );
 	  DUMP();
-	  return false;
+	  return true;
 	}
       }
       ++i;
