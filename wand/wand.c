@@ -338,7 +338,7 @@ int main(int argc,char **argv)
 	resp = askEtud("GETMAC");
 	if( resp->status == OKAY) {
 		strncpy(macaddr, resp->data[0]+7, 17);
-		macaddr[0][17]='\0';
+		macaddr[17]='\0';
 	}
 	delete_response( resp );
   free( resp );
