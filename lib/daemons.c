@@ -21,11 +21,12 @@ void put_pid( char *fname )
 {
 	char *defname = "WandProject";
 	char buf[512];
+	int fd;
 
 	if( fname == NULL ) fname = defname;
 
 	snprintf( buf, 512, "/var/run/%s.pid", fname );
-	int fd=creat(buf,0660);
+	fd=creat(buf,0660);
 	if (fd<0)
 		return;
 	sprintf(buf,"%i\n",getpid());

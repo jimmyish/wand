@@ -1,15 +1,28 @@
 CXXFLAGS=-I../include
 CFLAGS=-I../include
+TESTS=$(wildcard tests/*.c)
+SUCCESS=$(addsuffix .test,$(basename $(TESTS)))
 
-all: config.a daemons.o protoverlay.o
+all: libconfig.a daemons.o protoverlay.o test
 
-config.a: config.a(config.tab.o) config.a(lex.yy.o) config.a(config.o)
+libconfig.a:  \
+	     libconfig.a(config.o) \
+	     libconfig.a(libconfig.o) \
+	     libconfig.a(config.yy.o)
+	ranlib $@
 
-config.tab.c config.tab.h: config.y
-	bison -d config.y
-
-lex.yy.c: config.l config.tab.h
-	flex config.l
+test: $(SUCCESS) libconfig.a
 
 clean:
-	rm -f config.tab.{h,c} lex.yy.c *.o config.a
+	rm -f libconfig.a tests/*.test *.o config.h
+
+%.c %.h: %.y
+	bison -d -o$@ $<
+
+%.yy.c: %.l %.h
+	flex -o$@ $<
+
+%.test: %.o libconfig.a
+	gcc $(CFLAGS) $< -L. -lconfig -lfl -o $(basename $<) 
+	$(basename $<) $(basename $<).in 
+
