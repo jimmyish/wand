@@ -11,14 +11,12 @@ PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/local/sbin/wand
 NAME=wand
 DESC="Wide Area Network Daemon"
-CONF=/usr/local/etc
+WAND_CONF=/usr/local/etc/wand.conf
+PID_FILE=/var/run/$NAME.pid
 
-if [ -f ${CONF}/wand.$(hostname -s).conf ]; then
-        . ${CONF}/wand.$(hostname -s).conf
-elif [ -f ${CONF}/wand.conf ]; then
-        . ${CONF}/wand.conf
-else
-        echo Could not find configuration file
+ARGS=" -f ${WAND_CONF} -p ${PID_FILE} "
+if [ ! -f ${WAND_CONF} ]; then
+        echo Could not find configuration file ${WAND_CONF}
         exit
 fi
 
@@ -27,26 +25,14 @@ test -x $DAEMON || exit 0
 set -e
 case "$1" in
   start)
-	if [ "x$ETHERNET" = "x" ]; then
-        	ETHERNET=$(/sbin/ip link show eth0 | grep "link/eth" | cut -b 16-33)
-	fi
-
-	if [ "x$SERVERS" = "x" ]; then
-        	echo No listed wand servers.
-        	exit;
-	fi
-
-	echo -n "Starting $DESC: $NAME"
-	for i in $SERVERS; do 
-		echo -n " ${i}"
-		start-stop-daemon --start --quiet --pidfile /var/run/$NAME.pid \
-			--exec $DAEMON -- $i $ETHERNET
-	done
+	echo "Starting $DESC: $NAME "
+	start-stop-daemon --start --quiet --pidfile ${PID_FILE} \
+			--exec $DAEMON -- $ARGS
 	echo "."
 	;;
   stop)
 	echo -n "Stopping $DESC: $NAME "
-	start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
+	start-stop-daemon --stop --quiet --pidfile ${PID_FILE} \
 		--exec $DAEMON
 	echo "."
 	;;
@@ -69,12 +55,13 @@ case "$1" in
 	#	option to the "reload" entry above. If not, "force-reload" is
 	#	just the same as "restart".
 	#
-	echo -n "Restarting $DESC: $NAME"
+	echo -n "Restarting $DESC: $NAME "
 	start-stop-daemon --stop --quiet --pidfile \
-		/var/run/$NAME.pid --exec $DAEMON
+		$PIDFILE --exec $DAEMON
+		--exec $ETUD
 	sleep 1
-	start-stop-daemon --start --quiet --pidfile \
-		/var/run/$NAME.pid --exec $DAEMON
+	start-stop-daemon --start --quiet --pidfile ${PID_FILE} \
+			--exec $DAEMON -- $ARGS
 	echo "."
 	;;
   *)
