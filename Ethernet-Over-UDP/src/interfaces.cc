@@ -88,10 +88,10 @@ static void do_read(int fd)
 	};
 }
 
-int init_interface(interface_t *interface)
+int init_interface(interface_t *interface,int id=1)
 {
 	int ifd;
-	if ((ifd=interface->setup(1))<0) {
+	if ((ifd=interface->setup(id))<0) {
 		return 0;
 	}
 	addRead(ifd,do_read);

@@ -34,7 +34,7 @@ int main(int arvc,char **argv)
 		cout << "Aborting..." << endl;
 		return 1;
 	}
-	if (!init_interface(interface)) {
+	if (!init_interface(interface,1)) {
 		cout << "Failed to initialise interface." << endl;
 		cout << "Aborting..." << endl;
 		return 1;
