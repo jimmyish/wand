@@ -5,10 +5,12 @@
  */
 
 #include <sys/types.h>
+#include <sys/time.h> /* for timeval, select timeouts */
 #include <unistd.h>
 #include <signal.h> /* for sigaction (call and struct) */
 #include <stdio.h> /* for fprintf and perror */
 #include <map>
+#include <errno.h>
 #include "debug.h"
 #include "mainloop.h"
 
@@ -39,16 +41,18 @@ int add_sig_hnd( void )
 
 	/* Make these values effective. */
 	if (sigaction(SIGPIPE, &handler, NULL) < 0) {
-		perror("add_sig_hnd:sigaction SIGPIPE");
+		logger(MOD_INIT, 3, "Failed to add signal handler:"
+			" SIGPIPE, %s\n", strerror(errno));
 		return -1;
 	}
 	
-	struct sigaction handler1;
-	handler1.sa_handler = &sig_hnd;
-	sigemptyset(&handler1.sa_mask);
-	if (sigaction(SIGTERM, &handler1, NULL) < 0) {
-	  perror("add_sig_hnd:sigaction SIGTERM");
-	  return -1;
+	/* Add a handler to SIGTERM */
+	handler.sa_handler = &sig_hnd;
+	sigemptyset(&handler.sa_mask);
+	if (sigaction(SIGTERM, &handler, NULL) < 0) {
+	  	logger(MOD_INIT, 3 , "Failed to add signal handler:"
+			" SIGTERM, %s\n", strerror(errno));
+	  	return -1;
 	}
 
 	return 0;
@@ -80,14 +84,18 @@ void remRead(int fd)
 void mainloop(void)
 {
 	fd_set rfd2;
-  	
+	struct timeval timeout;
+
+	timeout.tv_sec = 1;
+	timeout.tv_usec = 0;
+	
 	if( 0 > add_sig_hnd() ) {
-		fprintf( stderr, "Unable to add Signal Handler - "
-			 "Not Catching Signals!\n" );
+		logger(MOD_INIT, 4, "Unable to add Signal Handler - "
+			"Not Catching Signals!\n" );
 	}
 	while(!endloop) {
 	  rfd2=rfd;
-	  select(highestfd+2,&rfd2,NULL,NULL,NULL);
+	  select(highestfd+2, &rfd2, NULL, NULL, &timeout);
 	  for (fd2callback_t::const_iterator i=fd2callback.begin(); 
 	       i!=fd2callback.end(); 
 	       i++) {
@@ -106,5 +114,5 @@ void mainloop(void)
 	for (fd2callback_t::const_iterator i=fd2callback.begin(); 
 		     i!=fd2callback.end(); 
 		     i++)
-	  close(i->first);
+	close(i->first);
 }
