@@ -72,7 +72,7 @@ void ui_process_callback(int fd)
 			return;
 		}
 		add_ip(ether,ip);
-		ui_send(fd,"+OK added");
+		ui_send(fd,"-OK added");
 		return;
 	}
 
@@ -83,7 +83,7 @@ void ui_process_callback(int fd)
 			ui_send(fd,"-ERR MAC address does not grok");
 		}
 		rem_ip(ether);
-		ui_send(fd,"+OK deleted");
+		ui_send(fd,"-OK deleted");
 		return;
 	}
 
