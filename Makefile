@@ -7,8 +7,8 @@ all: lib/daemons.o lib/protoverlay.o
 		$(MAKE) -C $$i all; \
 	done
 
-lib/daemons.o: lib/daemons.cc include/daemons.h
-	$(CXX) $(CXXFLAGS) -c lib/daemons.cc -o lib/daemons.o
+lib/daemons.o: lib/daemons.c include/daemons.h
+	$(CXX) $(CXXFLAGS) -c lib/daemons.c -o lib/daemons.o
 
 lib/protoverlay.o: lib/protoverlay.c include/protoverlay.h
 	$(CC) $(CFLAGS) -c lib/protoverlay.c -o lib/protoverlay.o

@@ -11,6 +11,12 @@
 
 #include "daemons.h"
 
+/* Flag set if we are a daemon or not. If we are then set to one. Used
+ * to tell if we should send output to screen or syslog.
+ */
+
+int daemonised = 0;
+
 void put_pid( char *fname )
 {
 	char *defname = "WandProject";
