@@ -27,7 +27,7 @@
 
 extern int modtolevel[];
 char *macaddr=NULL;
-char *ifname="wan0";
+char *ifname=NULL;
 
 int load_module(char *filename)
 {
@@ -166,7 +166,11 @@ int main(int argc,char **argv)
 		sprintf(buf, "/var/run/Etud.%s.ctrl", ifname);
 		ctrlfile = strdup(buf);
 	}
-
+	/* Check that ifname is set */
+	if (ifname == NULL) {
+		ifname = strdup("wan0");
+	}
+	
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
 	if (!load_module(module)) {
 		logger(MOD_INIT, 1, "Aborting...\n");
