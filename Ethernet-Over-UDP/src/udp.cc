@@ -19,7 +19,7 @@
 #include "debug.h"
 
 int udpfd;
-int udpport;
+int udpport = 22222;
 
 int udp_read(int udpfd,char *buffer,int size)
 {
