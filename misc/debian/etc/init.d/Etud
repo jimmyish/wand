@@ -6,23 +6,28 @@
 #
 # Version:	$Id$
 #
-
+ETUDCONF=/etc/etud.conf
+WANDCONF=/usr/local/etc
+PIDFILE=/var/run/Etud.pid
 PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
 DAEMON=/usr/local/sbin/Etud
+ARGS="-f $ETUDCONF -p $PIDFILE"
 NAME=Etud
 DESC="EtherneT over Udp Daemon"
-CONF=/usr/local/etc
 IP=/bin/ip
 
 
-
-if [ -f ${CONF}/wand.$(hostname -s).conf ]; then
-        . ${CONF}/wand.$(hostname -s).conf
-elif [ -f ${CONF}/wand.conf ]; then
-        . ${CONF}/wand.conf
-else
-        echo Could not find configuration file
+# Check for the Etud configuration file
+if [ ! -f ${ETUDCONF} ]; then
+        echo Could not find etud configuration file
         exit
+fi
+# Check for the wand configuration file
+if [ -f ${WANDCONF}/wand.$(hostname -s).conf ]; then
+        . ${WANDCONF}/wand.$(hostname -s).conf
+else
+	echo Could not find wand configuration file
+	exit
 fi
 
 if [ "x$INTERFACE" = "x" ]; then
@@ -61,7 +66,7 @@ case "$1" in
 
 
 	echo  "Starting $DESC: $NAME"
-	start-stop-daemon --start --quiet --exec $DAEMON
+	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
 
 	echo " * Configuring link layer"
 	$IP link set $INTERFACE arp on multicast off address $ETHERNET mtu 1280
@@ -78,9 +83,9 @@ case "$1" in
 	;;
   stop)
 	echo -n "Stopping $DESC: $NAME "
-	start-stop-daemon --stop --quiet --pidfile /var/run/$NAME.pid \
-		--exec $DAEMON
-	rm /var/run/$NAME.pid
+	start-stop-daemon --stop --quiet --pidfile $PIDFILE  \
+		--exec $DAEMON -- $ARGS
+	rm $PIDFILE
 	rm /var/run/$NAME.ctrl
 	$IP link set $INTERFACE down
 	echo "."
@@ -95,7 +100,7 @@ case "$1" in
 	#
 	# echo -n "Reloading $DESC configuration..."
 	# start-stop-daemon --stop --signal 1 --quiet --pidfile \
-	#	/var/run/$NAME.pid --exec $DAEMON
+	#	$PIDFILE --exec $DAEMON -- $ARGS
 	# echo "done."
   #;;
   restart|force-reload)
@@ -107,13 +112,13 @@ case "$1" in
 
 	echo -n "Restarting $DESC: $NAME"
 	start-stop-daemon --stop --quiet --pidfile \
-		/var/run/$NAME.pid --exec $DAEMON
-        rm /var/run/$NAME.pid
+		$PIDFILE --exec $DAEMON -- $ARGS
+        rm $PIDFILE
         rm /var/run/$NAME.ctrl
         $IP link set $INTERFACE down
 	
 	sleep 1
-	start-stop-daemon --start --quiet --exec $DAEMON
+	start-stop-daemon --start --quiet --exec $DAEMON -- $ARGS
 
 	echo " * Configuring link layer"
 	$IP link set $INTERFACE arp on multicast off address $ETHERNET mtu 1280
