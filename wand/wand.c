@@ -92,7 +92,7 @@ void addEntry(char *mac,char *ip)
 		root = tmp;
 	}
 	else {
-		while (tmp->next) {
+		while (tmp) {
 			if (strcasecmp(mac,tmp->mac)==0) {
 				if (strcmp(ip,tmp->ip)!=0) {
 					free(tmp->ip);
@@ -121,37 +121,37 @@ void addEntry(char *mac,char *ip)
  */
 void clearOldEntries(void)
 {
-	struct node_t *tmp = root;
-	struct node_t *tmp2 = NULL;
+	struct node_t *curr = root;
+	struct node_t *prev = NULL;
 	struct node_t *next = NULL;
 	char message[255];
-	while (tmp) {
-		next = tmp->next;
-		if (tmp->flag) {
+	while (curr) {
+		next = curr->next;
+		if (curr->flag) {
 			// syslog("Removing %s",mac)
     			snprintf(message,sizeof(message),
 					"DEL %s",
-					tmp->mac);
+					curr->mac);
     			tellEtud(message);
-			if (!tmp2) {
-				assert(root == tmp);
+			if (!prev) {
+				assert(root == curr);
 				root = root->next;
-				free(tmp->ip);
-				free(tmp->mac);
-				free(tmp);
+				free(curr->ip);
+				free(curr->mac);
+				free(curr);
 			}
 			else {
-				tmp2->next = tmp->next;
-				free(tmp->ip);
-				free(tmp->mac);
-				free(tmp);
+				prev->next = curr->next;
+				free(curr->ip);
+				free(curr->mac);
+				free(curr);
 			}
 		}
 		else {
-			tmp->flag=1; /* old */
-			tmp2=tmp;
+			curr->flag=1; /* old */
+			prev=curr;
 		}
-		tmp=next;
+		curr=next;
 	} /* of while(tmp) */
 } /* of clearOldEntries */
 
