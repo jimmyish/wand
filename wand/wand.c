@@ -12,6 +12,7 @@
 #include <time.h>
 #include <unistd.h>
 #include <assert.h>
+#include <libgen.h> /* for basename */
 #include "daemons.h"
 #include "protoverlay.h"
 #include "config.h"
@@ -217,17 +218,20 @@ void doPacket(char *packet,int len)
 }
 
 void usage(const char *prog) {
-	printf("%s: -i server 
-					[-c controlfile] - Specify the Etud control file
-					[-D]						 - Don't daemonise
-					[-f configfile]	 - Read config from this file
-					[-h]						 - This help
-					[-i server]			 - Specify the wansd server 
-					[-l port]				 - Communicate on the specified port
-					[-p pidfile] 		 - File to store pid in
-					Options on command line override those in the config
-					file.					
-					\n", prog);
+	char *progname;
+
+        progname=strdup(prog);
+        
+
+	printf("%s:	[-c ctrlfile]	- Specify the Etud control file
+	[-D]		- Don't daemonise
+	[-f configfile]	- Read config from this file
+	[-h]		- This help
+	[-i server]	- Specify the wansd server 
+	[-l port]	- Communicate on the specified port
+	[-p pidfile]	- File to store pid in
+
+Options on command line override those in the config file.				\n", basename(progname));
 }
 
 int main(int argc,char **argv)
@@ -301,6 +305,10 @@ int main(int argc,char **argv)
 				break;
 			case 'p':
 				cpidfile = strdup(optarg);
+				break;
+			default:
+				usage(argv[0]);
+				return 1;
 				break;
 		}
 	}
