@@ -104,7 +104,7 @@ static void m_list(int fd,char **argv,int argc)
 		sprintf(tbuff,"+LIST %s\t%s\t%d\r\n",
 			i->first(),
 			inet_ntoa(i->second.sin_addr), 
-			i->second.sin_port);
+			ntohs(i->second.sin_port));
 		ui_send(fd,tbuff);
 	}
 	ui_send(fd,"-OK\r\n");
