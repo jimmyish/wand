@@ -11,6 +11,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <assert.h>
 #include "daemons.h"
 #include "protoverlay.h"
 
@@ -133,6 +134,7 @@ void clearOldEntries(void)
 					tmp->mac);
     			tellEtud(message);
 			if (!tmp2) {
+				assert(root == tmp);
 				root = root->next;
 				free(tmp->ip);
 				free(tmp->mac);
