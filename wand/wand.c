@@ -249,7 +249,7 @@ int main(int argc,char **argv)
 	int do_daemonise=1;
 	char *pidfile = "wand";
 	char *server = 0;
-	int udpport;
+	int udpport = 44444;
 	char macaddr[18];
 	
 	/* Config options from the command line */
