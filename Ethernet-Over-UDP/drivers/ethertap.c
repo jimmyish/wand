@@ -35,76 +35,23 @@
 static int fd = -1;
 static int tapdevno;
 
-static int ethertap_setup(unsigned long myid) {
-	
-	struct ifreq ifr;
-	int skfd;
+static int ethertap_setup(unsigned long myid) 
+{
 	char tapdevice[16];
-
-	char hwaddr[6] = { 
-		0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-	};
+	printf("ethertap_setup( %lu ) entered...\n", myid);
 
 	fd = 0;	
-	tapdevno = 0;
-
+	tapdevno = 3;
 	
-	memcpy(hwaddr, &(myid)+(6-sizeof(myid)), 4);
-	
-    	/* Open a socket so we can ioctl() */
-        if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-                perror("socket");
-                exit(1);
-        }
-
-               	
 	while (tapdevno<MAX_ETHERTAP_DEVICES) {
-		snprintf(tapdevice, 255, "/dev/tap%d", tapdevno);
+		snprintf(tapdevice, 16, "/dev/tap%d", tapdevno);
 		fd = open(tapdevice, O_RDWR);					
-
-		if (fd > 1) {
-
-   			/* Get interface flags */
-   			sprintf(ifr.ifr_name, "tap%d", tapdevno);
-
-  	  		if (ioctl(skfd, SIOCGIFFLAGS, &ifr) < 0) {
-   	     			fprintf(stderr, "%s: unknown interface: %s\n", 
-                		ifr.ifr_name, strerror(errno));
-        			return -1;
-    			}
-
-			/* Set the interface to DOWN */
-			ifr.ifr_flags &= ~IFF_UP; /* Interfaces don't like their HWADDR changed on the fly! */
-		   	if (ioctl(skfd, SIOCSIFFLAGS, &ifr) < 0) {
-			       	perror("SIOCSIFFLAGS");
-       	 			return -1;
-    			}
-#if 0			
-			/* Set the HWADDR */
-			ifr.ifr_netmask.sa_family = ARPHRD_ETHER;
-
-			memcpy(ifr.ifr_netmask.sa_data, hwaddr, 6);
-    			if (ioctl(skfd, SIOCSIFHWADDR, &ifr) < 0) {
-            			perror("SIOCSIFHWADDR");
-        			return -1;
-    			}
-#endif    			
-			/* MTU is 576 */
-			ifr.ifr_mtu = 576;
-            		if (ioctl(skfd, SIOCSIFMTU, &ifr) < 0) {
-                            	fprintf(stderr, "SIOCSIFMTU: %s\n", strerror(errno));
-				return -1;
-                        }
-                                                        
-			close (skfd);
-			fprintf(stderr,"ethertap bound to device /dev/tap%i\n",tapdevno);
-			return fd;
-		}			
+		if( fd >= 0 ) {
+			return fd;			
+		}
 		tapdevno++;
 	}
-
-
-	close (skfd);
+	
 	printf("can't open ethertap device, aborting\n");
 	return -1;
 }
