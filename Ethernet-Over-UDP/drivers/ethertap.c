@@ -51,6 +51,7 @@ static int ethertap_setup()
 		snprintf(tapdevice, 16, "/dev/tap%d", tapdevno);
 		fd = open(tapdevice, O_RDWR);
 		if( fd >= 0 ) {
+			fprintf(stderr,"got device %s (fd=%d)\n",tapdevice,fd);
 			return fd;
 		}
 		tapdevno++;
