@@ -129,8 +129,8 @@ void clearOldEntries(void)
 		if (tmp->flag) {
 			// syslog("Removing %s",mac)
     			snprintf(message,sizeof(message),
-					"DEL %s %s",
-					tmp->mac,tmp->ip);
+					"DEL %s",
+					tmp->mac);
     			tellEtud(message);
 			if (!tmp2) {
 				root = root->next;
@@ -150,8 +150,8 @@ void clearOldEntries(void)
 			tmp2=tmp;
 		}
 		tmp=next;
-	}
-}
+	} /* of while(tmp) */
+} /* of clearOldEntries */
 
 void doPacket(char *packet,int len)
 {
