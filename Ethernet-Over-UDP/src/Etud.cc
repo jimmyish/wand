@@ -20,6 +20,7 @@
 #include "ui.h"
 #include "mainloop.h"
 #include "daemons.h"
+#include "debug.h"
 
 int load_module(char *s)
 {
@@ -27,7 +28,9 @@ int load_module(char *s)
 	strcpy(filename,"/usr/local/lib/wand/");
 	strcat(filename,s);
 	if(!dlopen(filename,RTLD_NOW)) {
-		cout << "Error loading module '" << s << "': " << dlerror() << endl;
+		logger(MOD_INIT, 1, "Error loading module '%s': %s\n",
+				s, dlerror());
+		
 		return 0;
 	}
 	return 1;
@@ -36,39 +39,41 @@ int load_module(char *s)
 int main(int arvc,char **argv)
 {
 	if (!load_module("drivers/ethertap.so")) {
-		cout << "Aborting..." << endl;
+		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
 	struct interface_t *interface = find_interface("ethertap");
 	if ((interface=find_interface("ethertap"))==NULL) {
-		cout << "Failed to find driver" << endl;
-		cout << "Aborting..." << endl;
+		logger(MOD_INIT, 1, "Failed to find driver\n");
+		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
 	if (!init_interface(interface,1)) {
-		cout << "Failed to initialise interface." << endl;
-		cout << "Aborting..." << endl;
+		logger(MOD_INIT, 1, "Failed to initialise interface.\n");
+		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
 	if (udp_start()<0) {
-		cout << "Failed to create udp socket." << endl;
-		cout << "Aborting..." << endl;
+		logger(MOD_INIT, 1, "Failed to create udp socket.\n");
+		logger(MOD_INIT, 1, "Aborting...\n");
 		interface->down();
 		return 1;
 	}
 	if (ui_setup()<0) {
-		cout << "Failed to create unix domain socket." << endl;
+		logger(MOD_INIT, 1, "Failed to create unix domain socket.\n");
 		interface->down();
 		return 1;
 	}
-	cout << "Etud started" << endl;
-	cout << "Using interface driver: " << interface->name << endl;
-	cout << " version: " << interface->version << endl;
+	logger(MOD_INIT, 6, "Etud started\n");
+	logger(MOD_INIT, 6, "Using interface driver: %s\n", interface->name);
+	logger(MOD_INIT, 6, " version: %s\n", interface->version);
 
 	/* Lets go to the background */
-	cout << "Attempting to Daemonise..." << endl;
+	logger(MOD_INIT, 7, "Attempting to Daemonise...\n");
 	daemonise(argv[0]);
 	put_pid("Etud");
 
+	logger(MOD_INIT, 7, "Daemonised\n");
+	
 	mainloop();
 }

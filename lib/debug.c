@@ -6,8 +6,9 @@
 
 #include <stdio.h> /* printf */
 #include <syslog.h> /* sylog */
-#include <stdarg.h> 
-#include <assert.h> 
+#include <stdlib.h> /* free */
+#include <stdarg.h> /* va */
+#include <assert.h> /* assert */
 
 #include "debug.h"
 
@@ -24,7 +25,7 @@ static int loglookup[]={LOG_ALERT, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
  * really really wants to set these higher !
  */
 
-int modtolevel[]= {0, 0};
+int modtolevel[]= {15, 15, 15, 15};
 
 extern int daemonised;
 
@@ -33,14 +34,14 @@ extern int daemonised;
 void logger(int module, int level, const char *format, ...)
 {
 	va_list ap;
-	char *buffer;
+	char buffer[513];
 	
-	/* Sanity checks. If these fail it's the person calling uses
-	 * fault !
+	/* Sanity checks. If these fail it's the person who is calling us
+	 * at fault !
 	 */
 	
 	assert(level <= 15 && level >= 0);
-	assert(module <= 1 && module >= 0);
+	assert(module <= 3 && module >= 0);
 	assert(daemonised == 0 || daemonised == 1);
 	assert(modtolevel[module] <= 15 && modtolevel[module] >= 0);
 	
@@ -54,7 +55,7 @@ void logger(int module, int level, const char *format, ...)
 				vprintf(format, ap);
 			}
 		} else {
-			vasprintf(&buffer, format, ap);
+			vsnprintf(buffer, sizeof(buffer), format, ap);
 			syslog(loglookup[level], "%s", buffer);
 			free(buffer);
 		}

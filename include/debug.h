@@ -67,6 +67,8 @@ void logger(int module, int level, const char *format, ...);
 
 #define MOD_MISC 0	/* Misc output. Hopefully used less and less */
 #define MOD_CONFIG 1	/* Output for the configuration parsing. */
+#define MOD_DRIVERS 2	/* Anything to do with etud's drivers. */
+#define MOD_INIT 3	/* Anything during code setup and initialisation */
 
 #ifdef __cplusplus
 }

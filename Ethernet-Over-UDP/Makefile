@@ -4,7 +4,7 @@ CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG
 all: Etud drivers/ethertap.so test
 
 Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
-	src/mainloop.o ../lib/daemons.o 
+	src/mainloop.o ../lib/daemons.o ../lib/debug.o 
 	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -o Etud
 
 test: src/list-test
