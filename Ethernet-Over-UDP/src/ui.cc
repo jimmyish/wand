@@ -166,6 +166,8 @@ static void ui_callback(int fd)
 	if (fd2>=0){
 		addRead(fd2,ui_process_callback);
 		logger(MOD_IPC, 15, "UI accept succeeded\n");
+
+	}
 }
 
 int ui_setup(char *s="/var/run/Etud.ctrl")
