@@ -9,7 +9,6 @@
 #include <sys/types.h> /* for select, umask and open */
 #include <sys/stat.h> /* for umask and open */
 #include <net/ethernet.h> /* for ether_header and ETH_ALEN */
-#include <iostream.h> /* for cout */
 #include <dlfcn.h> /* for dlopen */
 #include <unistd.h> /* for select */
 #include <fcntl.h> /* for open */

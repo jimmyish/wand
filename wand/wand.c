@@ -227,17 +227,17 @@ int main(int argc,char **argv)
 	struct timeval tm;
 	struct hostent *host = NULL;
 	char *pidfile = "wand";
-	int got_server = 0;
 	char macaddr[18];
 	char ch;
 	response_t *resp;
+	char cfgfile[1024];
 	
 	// Set defaults
 	strcpy(control_file_path,"/var/run/Etud.ctrl");
 	macaddr[0] = '\0';
 	
 	// Parse command line arguments
-	while((ch = getopt(argc, argv, "c:i:p:")) != -1){
+	while((ch = getopt(argc, argv, "c:i:p:f:h:")) != -1){
 	  switch(ch)
 	    {	
 			case 'c':
@@ -249,18 +249,17 @@ int main(int argc,char **argv)
 					fprintf(stderr,"%s: Not found\n",optarg);
 					return 1;
 				}
-				got_server=1;
 				break;
 			case 'p':
 				pidfile = strdup(optarg);
 				break;
-			}
-	}
-	
-	if (!got_server) {
-		fprintf(stderr, "%s: -i server [-c controlfile] [-p pidfile]\n", 
-						argv[0]);
-		return 1;
+			case 'f':
+				strncpy(cfgfile, optarg, 1024);
+				break;
+			case 'h':
+				fprintf(stderr, "%s: [-i server] [-c controlfile] [-p pidfile] [-f configfile]\n", argv[0]);
+				break;
+		}
 	}
 	
 	if (sock<0) {
