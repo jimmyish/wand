@@ -2,9 +2,6 @@
  * $Id$
  * Licensed under the GPL, see file COPYING in the top level for more
  * details.
- *
- * <wuz> do NOT check in ethertap_cfg.h directly. play with
- *       ethertap_cfg.h.sample and check THAT in!
  */
         
 #ifndef ETHERTAP_CFG_H

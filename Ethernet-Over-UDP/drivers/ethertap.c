@@ -50,11 +50,11 @@ static int ethertap_setup(char *req_name)
 
     	/* Open a socket so we can ioctl() */
         if ((skfd = socket(AF_INET, SOCK_DGRAM, 0)) < 0) {
-                logger(MOD_DRV, 1, "Socket create failed - %m\n");
+                logger(MOD_DRIVERS, 1, "Socket create failed - %m\n");
                 return -1;
         }
 		
-	logger(MOD_DRV, 15, "ethertap_setup() entered...\n");
+	logger(MOD_DRIVERS, 15, "ethertap_setup() entered...\n");
 
 
 	assert(strlen(req_name) <= IFNAMSIZ);
@@ -62,7 +62,7 @@ static int ethertap_setup(char *req_name)
 	ifname = strdup(req_name);
 	
 	if(ifname == NULL) {
-		logger(MOD_DRV, 1, "ifname copy failed.\n");
+		logger(MOD_DRIVERS, 1, "ifname copy failed.\n");
 		return -1;
 	}
 	
@@ -70,14 +70,14 @@ static int ethertap_setup(char *req_name)
 		snprintf(tapdevice, 16, "/dev/tap%d", tapdevno);
 		fd = open(tapdevice, O_RDWR);
 		if(fd >= 0){
-			logger(MOD_DRV, 15, "got device %s (fd=%d)\n", tapdevice, fd);
+			logger(MOD_DRIVERS, 15, "got device %s (fd=%d)\n", tapdevice, fd);
 			break;
 		}
 		tapdevno++;
 	}
 	
 	if(fd < 0){
-		logger(MOD_DRV, 1, "Can't open ethertap device, aborting.\n");
+		logger(MOD_DRIVERS, 1, "Can't open ethertap device, aborting.\n");
 		return -1;
 	}
 	
@@ -85,14 +85,14 @@ static int ethertap_setup(char *req_name)
 	snprintf(ifr.ifr_newname, IFNAMSIZ, "%s", ifname);
 	
 	if(ioctl(skfd, SIOCSIFNAME, &ifr) < 0){
-		logger(MOD_DRV, 1, 
+		logger(MOD_DRIVERS, 1, 
 				"Could not rename ethertap interface to %s - %m.\n", 
 				ifname);
 		return -1;
 	}
 
-	logger(MOD_DRV, 15, "Ethertap interface renamed to %s.\n", ifname);
-	logger(MOD_DRV, 15, "ethertap_setup() completed...\n");
+	logger(MOD_DRIVERS, 15, "Ethertap interface renamed to %s.\n", ifname);
+	logger(MOD_DRIVERS, 15, "ethertap_setup() completed...\n");
 
 	return fd;
 }

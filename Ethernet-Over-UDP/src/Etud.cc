@@ -23,6 +23,8 @@
 #include "debug.h"
 #include "config.h"
 
+extern int modtolevel[];
+
 int load_module(char *filename)
 {
 	if(!dlopen(filename,RTLD_NOW)) {
@@ -41,6 +43,9 @@ int main(int arvc,char **argv)
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
+		{ "debug_MOD_INIT", TYPE_INT, &modtolevel[MOD_INIT]},
+		{ "debug_MOD_IPC", TYPE_INT, &modtolevel[MOD_IPC]},
+		{ "debug_MOD_DRIVERS", TYPE_INT, &modtolevel[MOD_DRIVERS]},
 		{ NULL, 0, NULL }
 	};
 	
