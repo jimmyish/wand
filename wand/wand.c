@@ -14,6 +14,7 @@
 #include <assert.h>
 #include "daemons.h"
 #include "protoverlay.h"
+#include "config.h"
 
 char control_file_path[1024];
 
@@ -243,15 +244,30 @@ int main(int argc,char **argv)
 	response_t *resp;
 	char *pidfile = "wand";
 	char macaddr[18];
+	char server[255];
 	char ch;
 	
-	char cfgfile[1024];
+	char conffile[1024];
 	int do_daemonise=1;
 	int cdo_daemonise=-1;
 	
 	// Set defaults
+	strcpy(conffile, "/usr/local/etc/wand.conf");
 	strcpy(control_file_path,"/var/run/Etud.ctrl");
 	macaddr[0] = '\0';
+	
+	config_t main_config[] = {
+		{"server", TYPE_STR|TYPE_NOTNULL, &server},
+		{"macaddr", TYPE_STR|TYPE_NOTNULL, &macaddr},	
+		{"controlfile", TYPE_STR|TYPE_NOTNULL, &control_file_path},
+		{"daemonise", TYPE_STR|TYPE_NOTNULL, &do_daemonise},
+		{NULL, 0, NULL}
+	};
+	
+	if(parse_config(main_config, conffile))
+		return 1;
+	
+	host = gethostbyname(server);
 	
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
@@ -264,7 +280,7 @@ int main(int argc,char **argv)
 				cdo_daemonise=0;
 				break;
 			case 'f':
-				strncpy(cfgfile, optarg, 1024);
+				strncpy(conffile, optarg, 1024);
 				break;
 			case 'h':
 				usage(argv[0]);
@@ -284,6 +300,9 @@ int main(int argc,char **argv)
 				break;
 		}
 	}
+	
+	if(!host)
+		return 1;
 	
 	if (sock<0) {
 		perror("socket");

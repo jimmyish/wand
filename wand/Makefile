@@ -1,8 +1,11 @@
-CFLAGS=-g -Wall -O2 -I../include/
+CFLAGS=-Iinclude/ -I../include/ -g -Wall
+CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG
+LDFLAGS=-L../lib
 
 all: wand
 
-wand: wand.c ../lib/daemons.o ../lib/protoverlay.o
+wand: wand.o ../lib/daemons.o ../lib/debug.o ../lib/protoverlay.o
+	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -lconfig -lfl -o wand
 
 clean:
 	rm -f wand *.o *~
