@@ -13,13 +13,16 @@
 #include <unistd.h>
 #include <assert.h>
 #include <libgen.h> /* for basename */
+#include <signal.h>
 #include "daemons.h"
 #include "protoverlay.h"
 #include "config.h"
 #include "debug.h"
 
 char *control_file_path = 0;
-
+int sock;
+struct sockaddr_in serveraddr;
+char macaddr[18];
 
 char *getword(char **buffer,int *len)
 {
@@ -82,6 +85,12 @@ void addEntry(char *mac,char *ip)
 	curr->flag = 0;
 	curr->next = NULL;
 }
+
+void send_update(int s, siginfo_t *t, void *m)
+{
+	sendto(sock, macaddr, strlen(macaddr)+1, 0, (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+}		  
+
 
 /*
  * clearOldEntries
@@ -157,14 +166,13 @@ Options on command line override those in the config file.				\n", basename(prog
 
 int main(int argc,char **argv)
 {
-	int sock = socket(PF_INET, SOCK_DGRAM, 0);
+	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	int flag = 0; /* If set it means we've sent an update request
 			 packet, but not yet had a reply back. (therefore
 			 resend the request every 30s or so, instead of
 			 every 10 minutes
 		      */
 	struct sockaddr_in address;
-	struct sockaddr_in serveraddr;
 	struct timeval tm;
 	struct hostent *host = NULL;
 	response_t *resp;
@@ -175,7 +183,6 @@ int main(int argc,char **argv)
 	char *pidfile = "wand";
 	char *server = 0;
 	int udpport = 44444;
-	char macaddr[18];
 	
 	/* Config options from the command line */
 	char *conffile = 0;
@@ -183,6 +190,9 @@ int main(int argc,char **argv)
 	char *ccontrol_file_path=NULL;
 	int cdo_daemonise=-1;
 	int cudpport=-1;
+	
+	/* Signal handling */
+	struct sigaction usr1;
 	
 	/* Config options from the config file */
 	config_t main_config[] = {
@@ -196,7 +206,12 @@ int main(int argc,char **argv)
 	// Set defaults
 	conffile = strdup("/usr/local/etc/wand.conf");
 	control_file_path = strdup("/var/run/Etud.ctrl");
-		
+	
+	/* Set up the signal handler - bind SIGUSR1 to send an update instantly */
+	usr1.sa_sigaction = send_update;
+	usr1.sa_flags = SA_SIGINFO;
+	sigaction(SIGUSR1, &usr1, 0);
+	
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:")) != -1){
 	  switch(ch)
@@ -323,3 +338,4 @@ int main(int argc,char **argv)
 	};
 	return 0;
 }
+
