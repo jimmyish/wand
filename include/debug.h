@@ -69,6 +69,8 @@ void logger(int module, int level, const char *format, ...);
 #define MOD_CONFIG 1	/* Output for the configuration parsing. */
 #define MOD_DRIVERS 2	/* Anything to do with etud's drivers. */
 #define MOD_INIT 3	/* Anything during code setup and initialisation */
+#define MOD_IPC 4	/* wand <-> etud IPC control */
+#define MOD_NETWORK 5	/* Anything related to the networking code */
 
 #ifdef __cplusplus
 }

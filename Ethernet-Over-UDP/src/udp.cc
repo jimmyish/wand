@@ -10,10 +10,13 @@
 #include <assert.h>
 #include <netinet/in.h> /* for AF_INET and sockaddr_in */
 #include <unistd.h> /* for read() */
+#include <errno.h>
+#include <string.h>
+
 #include "driver.h"
 #include "mainloop.h"
-
 #include "udp.h"
+#include "debug.h"
 
 int udpfd;
 
@@ -41,7 +44,8 @@ int udp_start(int port=22222)
 	int sock;
 
 	if ((sock = socket(AF_INET,SOCK_DGRAM,0))<0) {
-		perror("socket");
+		logger(MOD_NETWORK, 1, "Failed to create network socket: %s\n",
+				strerror(errno));
 		return -1;
 	}
 
@@ -50,7 +54,8 @@ int udp_start(int port=22222)
 	addr.sin_addr.s_addr=htonl(INADDR_ANY);
 
 	if ((bind(sock,(struct sockaddr *)&addr,sizeof(addr)))<0) {
-		perror("bind");
+		logger(MOD_NETWORK, 1, "Failed to bind to network socket: %s\n",
+				strerror(errno));
 		return -1;
 	}
 	udpfd=sock;

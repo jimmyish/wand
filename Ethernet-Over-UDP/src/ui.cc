@@ -14,11 +14,14 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+#include <errno.h>
+
 
 #include "list.h"
 #include "ui.h"
 #include "driver.h"
 #include "mainloop.h"
+#include "debug.h"
 
 void ui_process_callback(int fd)
 {
@@ -26,7 +29,8 @@ void ui_process_callback(int fd)
 	int len;
 	len=read(fd,buffer,sizeof(buffer));
 	if( len < 0 ) {
-		perror("callback:read");
+		logger(MOD_IPC, 5, "Read error in callback: %s\n",
+				strerror(errno));
 		return;
 	} else if( len==0 ) {
 		remRead(fd);
@@ -42,12 +46,13 @@ void ui_process_callback(int fd)
 		arg++;
 	}
 
-#if 0 /* Too Much Debug */
 	if( arg >= (buffer+len)) 
-		printf("GOT HERE! arg: past EOS buf: \"%s\"\n", buffer);
+		logger(MOD_IPC, 15, "GOT HERE! arg: past EOS buf: \"%s\"\n", 
+				buffer);
 	else
-		printf("GOT HERE! arg: \"%s\" buf: \"%s\"\n", arg, buffer);
-#endif
+		logger(MOD_IPC, 15, "GOT HERE! arg: \"%s\" buf: \"%s\"\n", 
+				arg, buffer);
+
 
 	/* "ADD 00:01:02:03:04:05 1.2.3.4" */
 	if (strcasecmp("add",buffer) == 0) {
@@ -131,7 +136,8 @@ int internal_send( int sock, char *msg, int msglen )
 {
 	int retval = 0;
 	if( 0 > (retval = write(sock,msg,msglen) ) ) {
-		perror( "send:write" );
+		logger(MOD_IPC, 5, "Write error in send: %s\n",
+				strerror(errno));
 		return retval;
 	}
 
@@ -165,23 +171,26 @@ int ui_setup(char *s="/var/run/Etud.ctrl")
 {
 	int fd=socket(PF_UNIX,SOCK_STREAM,0);
 	if (fd<0) {
-		perror("control socket");
+		logger(MOD_IPC, 1, "Error creating control socket: %s\n",
+				strerror(errno));
 		return -1;
 	}
 	struct sockaddr_un sockname;
 	sockname.sun_family = AF_UNIX;
 	strcpy(sockname.sun_path,s);
 	if (bind(fd,(const sockaddr *)&sockname,sizeof(sockname))<0) {
-		perror("control bind");
+		logger(MOD_IPC, 1, "Error binding to control socket: %s\n",
+				strerror(errno));
 		close(fd);
 		return -1;
 	}
 	if (listen(fd,8)<0) {
-		perror("control listen");
+		logger(MOD_IPC, 1, "Error listening to control socket: %s\n",
+				strerror(errno));
 		close(fd);
 		return -1;
 	}
 	addRead(fd,ui_callback);
-	printf("UI ready\n");
+	logger(MOD_IPC, 7, "UI ready\n");
 	return fd;
 }
