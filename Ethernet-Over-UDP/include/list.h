@@ -21,26 +21,27 @@ class ether_t {
 		ether_t(unsigned char MAC[6]) {
 			memcpy(address,MAC,sizeof(address));
 		}
-		void parse(char *s) {
+		/* 0 on sucess; negative on failure */
+		int parse(char *s) {
 			/* FIXME: TODO: Throw ParseError */
 			static char *digits = "0123456789abcdef";
 			char *tmp;
 			for (int i=0;i<6;i++) {
 				/* Decode the first hex digit */
 				if (*s == '\0') /* Need a char */
-					return; 
+					return -1; 
 				tmp=strchr(digits,tolower(*s));
 				if (!tmp) /* Not a hex digit */
-					return; 
+					return -1; 
 				address[i]=tmp-digits;
 			
 				/* Decode the next digit */
 				s++;
 				if (*s == '\0') /* Need a char */
-					return; 
+					return -1; 
 				tmp=strchr(digits,tolower(*s));
 				if (!tmp) /* Not a hex digit */
-					return; 
+					return -1; 
 				address[i]=(address[i]<<4)+(tmp-digits);
 				s++;
 	
@@ -48,6 +49,7 @@ class ether_t {
 				if (*s == ':' || *s == '-')
 					s++;
 			}
+			return 0; /* Sucess */
 		}
 		bool operator <(const ether_t &b) const {
 			for (int i=0;i<6;i++)

@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <unistd.h>
+
 #include "list.h"
 #include "ui.h"
 #include "mainloop.h"
@@ -31,15 +32,24 @@ void ui_process_callback(int fd)
 	}
 	*(buffer+len)='\0';
 	char *arg=buffer;
-	while(*arg && *arg != ' ')
+	while( *arg && !isspace( *arg ) )
 		arg++;
-	if (*arg == ' ' || *arg == '\n' || *arg == '\r') {
+	while( *arg && isspace( *arg ) ) {
 		*arg='\0';
 		arg++;
 	}
+
+#if 0 /* Too Much Debug */
+	if( arg >= (buffer+len)) 
+		printf("GOT HERE! arg: past EOS buf: \"%s\"\n", buffer);
+	else
+		printf("GOT HERE! arg: \"%s\" buf: \"%s\"\n", arg, buffer);
+#endif
+
+	/* "ADD 00:01:02:03:04:05 1.2.3.4" */
 	if (strcasecmp("add",buffer) == 0) {
 		if (!arg) {
-			ui_send(fd,"ERR Missing parameter ether");
+			ui_send(fd,"-ERR Missing parameter 'mac'");
 			return;
 		}
 		char *arg2;
@@ -47,52 +57,67 @@ void ui_process_callback(int fd)
 		while (*arg2 && *arg2 != ' ')
 			arg2++;
 		if (*arg2 == '\0') {
-			ui_send(fd,"ERR Missing parameter ip");
+			ui_send(fd,"-ERR Missing parameter 'ip'");
 			return;
 		}
 		*arg2='\0';
 		arg2++;
 		ether_t ether;
-		ether.parse(arg);
+		if( 0 > ether.parse(arg) ) {
+			ui_send(fd,"-ERR MAC address does not grok");
+		}
 		ip_t ip;
 		if ((ip=inet_addr(arg2))==-1) {
-			ui_send(fd,"ERR IP address parse error");
+			ui_send(fd,"-ERR IP address does not grok");
 			return;
 		}
 		add_ip(ether,ip);
+		ui_send(fd,"+OK added");
 		return;
 	}
+
+	/* "DEL 00:01:02:03:04:05" */
 	else if (strcasecmp("del",buffer) == 0) {
 		ether_t ether;
-		ether.parse(arg);
+		if( 0 > ether.parse(arg) ) {
+			ui_send(fd,"-ERR MAC address does not grok");
+		}
 		rem_ip(ether);
+		ui_send(fd,"+OK deleted");
 		return;
 	}
+
+	/* "LIST" */
 	else if (strcasecmp("list",buffer) == 0) {
 		char buffer[80];
-		ui_send(fd,"LIST- ethernet\tip");
+		ui_send(fd,"+LIST ethernet\tip");
 		for (online_t::const_iterator i=online.begin();
 		     i!=online.end();
 		     i++) 
 		{
 			struct sockaddr_in sockaddr;
 			sockaddr.sin_addr.s_addr=i->second;
-			sprintf(buffer,"LIST- %s\t%s",
+			sprintf(buffer,"+LIST %s\t%s",
 				i->first(),
 				inet_ntoa(sockaddr.sin_addr));
 			ui_send(fd,buffer);
 		}
-		ui_send(fd,"LIST");
+		ui_send(fd,"-OK");
 		return;
 	}
+	
+	/* "VERSION" (Not Yet Implemented) */
 	else if (strcasecmp("version",buffer) == 0) {
-		ui_send(fd,"ERR Not Supported");
+		ui_send(fd,"-ERR Not Supported");
 		return;
 	}
+
+	/* Non blank line - complain */
 	else if (strcasecmp("",buffer)!=0) {
-		ui_send(fd,"ERR Invalid or unsupported command");
+		ui_send(fd,"-ERR Invalid or unsupported command");
 		return;
 	}
+
 	return;
 }
 
