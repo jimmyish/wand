@@ -33,7 +33,6 @@ char *ifname=NULL;
 
 int load_module(char *filename)
 {
-	printf("I got here\n");
 	if(!dlopen(filename,RTLD_NOW)) {
 		logger(MOD_INIT, 1, "Error loading module '%s': %s\n",
 				filename , dlerror());
