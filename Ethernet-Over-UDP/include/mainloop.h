@@ -14,4 +14,3 @@ void mainloop(void);
 void sig_hnd( int signo );
 
 #endif
-

@@ -13,4 +13,3 @@ int ui_process_request(int fd);
 int ui_send(int sock,char *msg);
 
 #endif
-
