@@ -109,7 +109,6 @@ int main(int arvc,char **argv)
 	cout << "Attempting to Daemonise..." << endl;
 	daemonise();
 	put_pid();
-	cout << "Returned from Daemonise sucessfully." << endl;
 
 	mainloop();
 }
