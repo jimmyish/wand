@@ -21,6 +21,7 @@
 #include "mainloop.h"
 #include "daemons.h"
 #include "debug.h"
+#include "config.h"
 
 int load_module(char *s)
 {
@@ -38,12 +39,22 @@ int load_module(char *s)
 
 int main(int arvc,char **argv)
 {
-	if (!load_module("drivers/ethertap.so")) {
+  	char *driver;
+	char *module;
+	config_t main_config[] = {
+		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
+		{ "driver", TYPE_STR|TYPE_NOTNULL, &driver },
+	};
+	if (parse_config(main_config,"/usr/local/etc/wand.conf")) {
+	  logger(MOD_INIT,1,"Bad Config file, giving up\n");
+	  return 1;
+	}
+	if (!load_module(module)) {
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;
 	}
-	struct interface_t *interface = find_interface("ethertap");
-	if ((interface=find_interface("ethertap"))==NULL) {
+	struct interface_t *interface = find_interface(driver);
+	if ((interface=find_interface(driver))==NULL) {
 		logger(MOD_INIT, 1, "Failed to find driver\n");
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;

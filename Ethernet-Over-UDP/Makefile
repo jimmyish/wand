@@ -1,11 +1,12 @@
 CFLAGS=-Iinclude/ -I../include/ -g -Wall 
-CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG
+CXXFLAGS=-Iinclude/ -I../include/ -g -Wall #-DINSANE_LIST_DEBUG 
+LDFLAGS=-L../lib
 
 all: Etud drivers/ethertap.so test
 
 Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o src/ui.o \
-	src/mainloop.o ../lib/daemons.o ../lib/debug.o 
-	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -o Etud
+	src/mainloop.o ../lib/daemons.o ../lib/debug.o
+	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -lconfig -lfl -o Etud
 
 test: src/list-test
 	@echo Executing tests...

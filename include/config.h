@@ -9,6 +9,10 @@
 #define TYPE_NOTNULL	0x10
 #define TYPE_NULL	0x20
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 typedef struct {
   	char *key;
 	int type;
@@ -39,4 +43,7 @@ int parse_config(config_t *config,char *filename);
  * }
  */
 
+#ifdef __cplusplus
+}
+#endif
 #endif
