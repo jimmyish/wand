@@ -25,11 +25,13 @@
 #include "debug.h"
 #include "etud.h"
 
-/* "ADD mac ip [port]" */
+/* "ADD mac ip port" */
+
 static void m_add(int fd,char **argv,int argc)
 {
 	sockaddr_in addr;
 	addr.sin_family = AF_INET;
+	int port;
 	
 	if (argc<2) {
 		ui_send(fd,"-ERR Not enough parameters\r\n");
@@ -44,8 +46,21 @@ static void m_add(int fd,char **argv,int argc)
 		ui_send(fd,"-ERR IP address does not grok\r\n");
 		return;
 	}
-	/* todo add port */
-	addr.sin_port=htons(udpport);
+	
+	/* check for port > 0 & <= 65535 */
+	if (strlen(argv[3]) > 5) {
+		ui_send(fd,"-ERR port does not grok\r\n");
+		return;
+	}
+	
+	port = atoi(argv[3]);
+	
+	if (port <= 0 || port > 65535){
+		ui_send(fd,"-ERR port does not grok\r\n");
+		return;
+	}
+	
+	addr.sin_port=htons((unsigned short)port);
 	
 	if( add_ip(ether,addr) ) {
 	  ui_send(fd,"-OK updated\r\n");

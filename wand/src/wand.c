@@ -24,6 +24,7 @@
 char *control_file_path = 0;
 int sock;
 char macaddr[18];
+unsigned short our_etud_port = 0;
 struct sockaddr_in address;
 
 char *getword(char **buffer,int *len)
@@ -144,7 +145,9 @@ void doPacket(char *packet,int len)
     char *ip=getword(&packet,&len);
     char message[255];
     addEntry(mac,ip);
-    snprintf(message,sizeof(message),"ADD %s %s",mac,ip);
+    /* currently tell Etud that the remote port for this pair is the 
+     * same as our port. FIXME */
+    snprintf(message,sizeof(message),"ADD %s %s %d",mac,ip,our_etud_port);
     tellEtud(message, control_file_path);
   }
   clearOldEntries();
@@ -344,8 +347,29 @@ int main(int argc,char **argv)
 	}
 	
 	delete_response( resp );
+	free( resp );
+	
+	resp = askEtud("GETPORT", control_file_path);
+	
+	if( resp->status == OKAY) {
+		our_etud_port = atoi(resp->data[0]);
+	}
 
-  	free( resp );
+	else {
+		logger(MOD_IPC, 1, "Could not retrieve port from Etud - Exiting\n");
+		return 1;
+	}
+	
+	delete_response( resp );
+
+	free( resp );
+
+	/* check that the port we got from Etud is sane */
+
+	if( our_etud_port <= 0 || our_etud_port > 65535 ){
+		logger(MOD_IPC, 1, "Got a bad port from Etud - Exiting");
+		return 1;
+	}
 
 	srand(time(NULL));
 	
