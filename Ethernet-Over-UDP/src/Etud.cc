@@ -37,7 +37,7 @@ int load_module(char *filename)
 int main(int arvc,char **argv)
 {
 	int do_daemonise=1;
-/*	char *module=NULL;
+	char *module=NULL;
 	config_t main_config[] = {
 		{ "module", TYPE_STR|TYPE_NOTNULL, &module },
 		{ "daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise },
@@ -51,7 +51,6 @@ int main(int arvc,char **argv)
 	}
 	
 	logger(MOD_INIT, 15, "Parsed config, about to load driver\n");
-*/	logger(MOD_INIT, 15, "About to start load driver\n");
 	if (!load_module("/usr/local/lib/wand/drivers/ethertap.so")) {
 		logger(MOD_INIT, 1, "Aborting...\n");
 		return 1;

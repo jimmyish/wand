@@ -73,7 +73,7 @@ static void do_read(int fd)
 int init_interface(void)
 {
 	int ifd;
-	if ((ifd=driver->setup())<0) {
+	if ((ifd=driver->setup("wan0"))<0) {
 		return 0;
 	}
 	addRead(ifd,do_read);

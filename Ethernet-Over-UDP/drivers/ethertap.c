@@ -21,44 +21,67 @@
  *                    devices
  */
  
+#include <sys/ioctl.h>
+#include <net/if.h>
+#include <net/if_arp.h>
+#include <net/route.h>
+#include <sys/socket.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
-#include <sys/ioctl.h>
-#include <net/if.h>
 #include <fcntl.h>
-#include <net/if_arp.h>
-#include <net/route.h>
-#include <sys/socket.h>
+
 
 #include "ethertap_cfg.h" /* grab max and default /dev/tapX numbers */
 #include "driver.h"
+#include "debug.h"
 
 static int fd = -1;
-static int tapdevno;
+char *ifname;
 
-static int ethertap_setup() 
+static int ethertap_setup(char *req_name) 
 {
 	char tapdevice[16];
-	printf("ethertap_setup() entered...\n");
-
-	fd = 0;	
-	tapdevno = FIRST_TAP_NUMBER;
+	int tapdevno = FIRST_TAP_NUMBER;
 	
-	while (tapdevno<MAX_ETHERTAP_DEVICES) {
+	logger(MOD_DRV, 15, "ethertap_setup() entered...\n");
+
+
+	ifname = strdup(req_name);
+	
+	if(ifname == NULL) {
+		logger(MOD_DRV, 1, "ifname copy failed.\n");
+		return -1;
+	}
+	
+	while (tapdevno < MAX_ETHERTAP_DEVICES) {
 		snprintf(tapdevice, 16, "/dev/tap%d", tapdevno);
 		fd = open(tapdevice, O_RDWR);
-		if( fd >= 0 ) {
-			fprintf(stderr,"got device %s (fd=%d)\n",tapdevice,fd);
-			return fd;
+		if(fd >= 0){
+			logger(MOD_DRV, 15, "got device %s (fd=%d)\n", tapdevice, fd);
+			break;
 		}
 		tapdevno++;
 	}
 	
-	printf("can't open ethertap device, aborting\n");
-	return -1;
+	if(fd < 0){
+		return -1;
+	}
+	
+	logger(MOD_DRV, 1, "Can't open ethertap device, aborting.\n");
+	
+	if(ioctl(fd, SIOCSIFNAME, ifname, strlen(ifname)) < 0){
+		logger(MOD_DRV, 1, "Could not rename ethertap interface to %s.\n", 
+				ifname);
+		return -1;
+	}
+
+	logger(MOD_DRV, 15, "Ethertap interface renamed to %s.\n", ifname);
+	logger(MOD_DRV, 15, "ethertap_setup() completed...\n");
+
+	return fd;
 }
 
 
@@ -73,7 +96,7 @@ static int ethertap_down(void)
                 exit(1);
         }
 	
-   	sprintf(ifr.ifr_name, "tap%d", tapdevno);
+   	strncpy(ifr.ifr_name, ifname, sizeof(ifr.ifr_name));
 
 	
 	/* Set the interface to DOWN */
