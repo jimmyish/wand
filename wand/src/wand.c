@@ -167,57 +167,60 @@ void usage(const char *prog) {
 Options on command line override those in the config file.				\n", basename(progname));
 }
 
-int main(int argc,char **argv)
+int mainloop(void)
 {
-	int sock = socket(PF_INET, SOCK_DGRAM, 0);
 	int flag = 0; /* If set it means we've sent an update request
 			 packet, but not yet had a reply back. (therefore
 			 resend the request every 30s or so, instead of
 			 every 10 minutes
 		      */
 	struct timeval tm;
-	struct hostent *host = NULL;
-	response_t *resp;
-	char ch;
 
-	/* The real config options */
-	int do_daemonise=1;
-	char *pidfile = "wand";
-	char *server = 0;
-	char *proto = 0;
-	int udpport = 44444;
-	
-	/* Config options from the command line */
-	char *conffile = 0;
-	char *cpidfile=NULL;
-	char *ccontrol_file_path=NULL;
-	char *cprotocol=NULL;
-	int cdo_daemonise=-1;
-	int cudpport=-1;
-	
-	
-	/* Signal handling */
-	struct sigaction usr1;
-	
-	/* Config options from the config file */
-	config_t main_config[] = {
-		{"server", TYPE_STR|TYPE_NULL, &server},
-		{"controlfile", TYPE_STR|TYPE_NULL, &control_file_path},
-		{"daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise},
-		{"udpport", TYPE_INT|TYPE_NULL, &udpport},
-		{"protocol", TYPE_STR|TYPE_NULL, &proto},
-		{NULL, 0, NULL}
+	tm.tv_sec=0;
+	tm.tv_usec=0;
+	for (;;) {
+	  	int addrlen = sizeof(address);
+		char buffer[65536];
+		int len;
+		fd_set rfds;
+
+		tm.tv_usec = 0;
+		if (tm.tv_sec<1) {
+		  if (flag) {
+		    tm.tv_sec=30;
+		  }
+		  else 
+		  {
+		    tm.tv_sec=300+rand()%600;
+		  }
+		  flag=1;
+		  sendto(sock,macaddr,strlen(macaddr)+1,0,
+		    (struct sockaddr *)&serveraddr, sizeof(serveraddr));
+		}
+		FD_ZERO(&rfds);
+		FD_SET(sock,&rfds);
+		select(sock+1,&rfds, NULL, NULL, &tm);
+		if (FD_ISSET(sock,&rfds)) {
+			len=recvfrom(sock,buffer,sizeof(buffer),0,(struct sockaddr *)&address,(socklen_t *)&addrlen);
+			doPacket(buffer,len);
+			flag=0;
+		}
 	};
+	return 0;
+}
 
-	// Set defaults
-	conffile = strdup("/usr/local/etc/wand.conf");
-	control_file_path = strdup("/var/run/Etud.ctrl");
-	
-	/* Set up the signal handler - bind SIGUSR1 to send an update instantly */
-	usr1.sa_sigaction = send_update;
-	usr1.sa_flags = SA_SIGINFO;
-	sigaction(SIGUSR1, &usr1, 0);
-	
+/* Config options from the command line */
+char *cpidfile=NULL;
+char *cprotocol=NULL;
+char *ccontrol_file_path=NULL;
+int cdo_daemonise=-1;
+char *conffile = 0;
+struct hostent *host = NULL;
+int cudpport=-1;
+
+int parse_commandline(int argc,char **argv)
+{
+	char ch;
 	// Parse command line arguments
 	while((ch = getopt(argc, argv, "c:Df:h:i:l:p:P:")) != -1){
 	  switch(ch)
@@ -257,6 +260,44 @@ int main(int argc,char **argv)
 				break;
 		}
 	}
+	return 0;
+}
+
+int main(int argc,char **argv)
+{
+	response_t *resp;
+
+	/* The real config options */
+	int do_daemonise=1;
+	char *pidfile = "wand";
+	char *server = 0;
+	char *proto = 0;
+	int udpport = 44444;
+	
+	/* Signal handling */
+	struct sigaction usr1;
+	
+	/* Config options from the config file */
+	config_t main_config[] = {
+		{"server", TYPE_STR|TYPE_NULL, &server},
+		{"controlfile", TYPE_STR|TYPE_NULL, &control_file_path},
+		{"daemonise", TYPE_BOOL|TYPE_NULL, &do_daemonise},
+		{"udpport", TYPE_INT|TYPE_NULL, &udpport},
+		{"protocol", TYPE_STR|TYPE_NULL, &proto},
+		{NULL, 0, NULL}
+	};
+
+	// Set defaults
+	conffile = strdup("/usr/local/etc/wand.conf");
+	control_file_path = strdup("/var/run/Etud.ctrl");
+
+	parse_commandline(argc,argv);
+	
+	/* Set up the signal handler - bind SIGUSR1 to send an update instantly */
+	usr1.sa_sigaction = send_update;
+	usr1.sa_flags = SA_SIGINFO;
+	sigaction(SIGUSR1, &usr1, 0);
+	
 
 	/* Read the config file */
 	if(parse_config(main_config, conffile))
@@ -281,6 +322,8 @@ int main(int argc,char **argv)
 		logger( MOD_INIT, 3, "Cannot resolve hostname\n");
 		return 1;
 	}
+
+	sock = socket(PF_INET, SOCK_DGRAM, 0);
 	
 	if (sock<0) {
 		perror("socket");
@@ -322,36 +365,7 @@ int main(int argc,char **argv)
 	
 	daemonise(argv[0]);
 	put_pid(pidfile);
-	
-	tm.tv_sec=0;
-	tm.tv_usec=0;
-	for (;;) {
-	  	int addrlen = sizeof(address);
-		char buffer[65536];
-		int len;
-		fd_set rfds;
-		tm.tv_usec = 0;
-		if (tm.tv_sec<1) {
-		  if (flag) {
-		    tm.tv_sec=30;
-		  }
-		  else 
-		  {
-		    tm.tv_sec=300+rand()%600;
-		  }
-		  flag=1;
-		  sendto(sock,macaddr,strlen(macaddr)+1,0,
-		    (struct sockaddr *)&serveraddr, sizeof(serveraddr));
-		}
-		FD_ZERO(&rfds);
-		FD_SET(sock,&rfds);
-		select(sock+1,&rfds, NULL, NULL, &tm);
-		if (FD_ISSET(sock,&rfds)) {
-			len=recvfrom(sock,buffer,sizeof(buffer),0,(struct sockaddr *)&address,(socklen_t *)&addrlen);
-			doPacket(buffer,len);
-			flag=0;
-		}
-	};
-	return 0;
+
+	return mainloop();
 }
 
