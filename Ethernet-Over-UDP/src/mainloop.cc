@@ -100,7 +100,7 @@ void mainloop(void)
 	  rfd2=rfd;
 	  timeout.tv_sec = 1;
 	  foo = select(highestfd+2, &rfd2, NULL, NULL, &timeout);
-	  logger(MOD_IPC, 1, "Select returned %d\n", foo);
+	  logger(MOD_IPC, 1, "Select returned %d, errno: %m\n", foo);
 	  for (fd2callback_t::const_iterator i=fd2callback.begin(); 
 	       i!=fd2callback.end(); 
 	       i++) {
