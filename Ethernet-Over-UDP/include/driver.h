@@ -15,6 +15,7 @@ struct interface_t {
 };
 
 void register_device(struct interface_t *interface_description);
+struct interface_t *find_interface(char *s);
 
 #ifdef __cplusplus
 }

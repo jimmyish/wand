@@ -17,8 +17,8 @@ struct interface_t *find_interface(char *s)
 	for (interface_list_t::const_iterator i=drivers.begin();
 	     i!=drivers.end();
 	     i++) {
-		if (strcmp(i->name,s)==0)
-			return i;
+		if (strcmp((*i)->name,s)==0)
+			return *i;
 	}
 }
 

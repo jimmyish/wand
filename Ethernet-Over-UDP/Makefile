@@ -3,8 +3,8 @@ CXXFLAGS=-Iinclude/
 
 all: Etud drivers/ethertap.so
 
-Etud: src/Etud.o src/interfaces.o
-	$(CXX) $(LDFLAGS) -rdynamic src/Etud.o src/interfaces.o -ldl -o Etud
+Etud: src/Etud.o src/interfaces.o src/list.o src/udp.o
+	$(CXX) $(LDFLAGS) -rdynamic $^ -ldl -o Etud
 
 drivers/ethertap.so: drivers/ethertap.c
 
