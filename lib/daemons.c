@@ -9,6 +9,7 @@
 #include <fcntl.h> /* for creat,open */
 #include <stdio.h> /* for snprintf */
 #include <syslog.h> /* for openlog */
+#include <string.h> /* for strrchr */
 
 #include "daemons.h"
 
@@ -40,6 +41,7 @@ void put_pid( char *fname )
 
 void daemonise(char *name) 
 {
+	
 	switch (fork()) {
 	case 0:
 		break;
@@ -69,5 +71,7 @@ void daemonise(char *name)
 	open("/dev/console",O_WRONLY);
 	daemonised = 1;
 
+	name = strrchr(name,'/') ? strrchr(name,'/') : name;
+	
 	openlog(name, LOG_PID, LOG_DAEMON);
 }	
