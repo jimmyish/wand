@@ -6,6 +6,7 @@
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+#include <syslog.h>
 #include "../Ethernet-Over-UDP/include/daemons.h"
 
 struct tMapping {
@@ -54,6 +55,10 @@ struct tMapping *dopacket(char *buffer,int length,struct sockaddr_in address)
 	}
 	entry->lastseen = time(NULL);
 	entry->version = 1;
+	syslog(LOG_DEBUG,"Recieved update from '%s' (%s)",
+		entry->mac,
+		inet_ntoa(entry->address.sin_addr)
+	);
 	return (!update) ? entry : NULL;
 }
 
@@ -110,6 +115,8 @@ int main(int argc,char **argv)
 	
 	daemonise();
 	put_pid("wansd");
+	openlog(argv[0],LOG_PID,LOG_DAEMON);
+	syslog(LOG_NOTICE,"%s started.",argv[0]);
                 	
 	for (;;) {
 		int addrlen=sizeof(address);
@@ -120,8 +127,8 @@ int main(int argc,char **argv)
 			errors++;
 			sleep(1);
 			if (errors>10) {
-				printf("recvfrom: %m\n");
-				printf("Too many recvfrom errors, bailing.\n");
+				syslog(LOG_ERR,"recvfrom: %m\n");
+				syslog(LOG_ERR,"Too many errors, bailing.\n");
 				return 1;
 			}
 		} else {
