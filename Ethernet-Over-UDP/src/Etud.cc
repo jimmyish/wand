@@ -130,5 +130,6 @@ int main(int argc,char **argv)
             unlink(pidfile);
       	}
       	// shutdown the interface
+	logger(MOD_INIT, 1, "Attempting to shutdown interface\n");
 	shutdown_interface();
 }
