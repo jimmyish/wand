@@ -67,15 +67,97 @@ char *getword(char **buffer,int *len)
   return tmp;
 }
 
+struct node_t {
+	char *mac;
+	char *ip;
+	int flag; /* Flag
+		   * 0 -- Seen in this packet, don't remove it
+		   * 1 -- Not yet seen, remove it on the next pass
+		   */
+	struct node_t *next;
+} *root;
+
+/* addEntry
+ * 
+ * adds/updates an entry in the mac->ip mapping linked list.  It always
+ * sets flag to 0.
+ */
+void addEntry(char *mac,char *ip)
+{
+	struct node_t *tmp = root;
+	if (!root) {
+		tmp = (struct node_t*)malloc(sizeof(struct node_t));
+		root = tmp;
+	}
+	else {
+		while (tmp->next) {
+			if (strcasecmp(mac,tmp->mac)==0) {
+				if (strcmp(ip,tmp->ip)!=0) {
+					free(tmp->ip);
+					tmp->ip=strdup(ip);
+				}
+				tmp->flag=0;
+				return;
+			}
+			tmp=tmp->next;
+		}
+		tmp->next = (struct node_t*)malloc(sizeof(struct node_t));
+		tmp=tmp->next;
+	}
+	// syslog("Adding %s (%i)",mac,ip)
+	tmp->mac = strdup(mac);
+	tmp->ip = strdup(ip);
+	tmp->flag = 0;
+	tmp->next = NULL;
+}
+
+/*
+ * clearOldEntries
+ *
+ * Remove any entry from Etud and from our list if it's flag is 1, which
+ * means that wand doesn't know about it either.
+ */
+void clearOldEntries(void)
+{
+	struct node_t *tmp = root;
+	struct node_t *tmp2 = NULL;
+	char message[255];
+	while (tmp) {
+		if (tmp->flag) {
+			// syslog("Removing %s",mac)
+    			snprintf(message,sizeof(message),
+					"DEL %s %s",
+					tmp->mac,tmp->ip);
+    			tellEtud(message);
+			if (!tmp2) {
+				root = root->next;
+				free(tmp->ip);
+				free(tmp->mac);
+				free(tmp);
+			}
+			else {
+				tmp2->next = tmp->next;
+				free(tmp->ip);
+				free(tmp->mac);
+				free(tmp);
+			}
+			tmp2=tmp;
+			tmp=tmp->next;
+		}
+	}
+}
+
 void doPacket(char *packet,int len)
 {
   while(len>0) {
     char *mac=getword(&packet,&len);
     char *ip=getword(&packet,&len);
     char message[255];
+    addEntry(mac,ip);
     snprintf(message,sizeof(message),"ADD %s %s",mac,ip);
     tellEtud(message);
   }
+  clearOldEntries();
 }
 
 int main(int argc,char **argv)
