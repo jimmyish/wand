@@ -113,7 +113,7 @@ void mainloop(void)
 	// add: shut interface down
 	for (fd2callback_t::const_iterator i=fd2callback.begin(); 
 		     i!=fd2callback.end(); 
-		     i++) {
-		close(i->first);
-	}
+		     i++)
+	close(i->first);
+	
 }
