@@ -24,10 +24,120 @@
 #include "debug.h"
 #include "etud.h"
 
+/* "ADD mac ip [port]" */
+static void m_add(int fd,char **argv,int argc)
+{
+	if (argc<3) {
+		ui_send(fd,"-ERR Not enough parameters\r\n");
+		return;
+	}
+	ether_t ether;
+	if( 0 > ether.parse(argv[1]) ) {
+		ui_send(fd,"-ERR MAC address does not grok\r\n");
+		return;
+	}
+	ip_t ip;
+	if ((signed int)(ip=inet_addr(argv[2]))==-1) {
+		ui_send(fd,"-ERR IP address does not grok\r\n");
+		return;
+	}
+	/* todo add port */
+	if( add_ip(ether,ip) ) {
+	  ui_send(fd,"-OK updated\r\n");
+	} else {
+	  ui_send(fd,"-OK no change\r\n");
+	}
+	return;
+}
+
+/* "DEL mac" */
+static void m_del(int fd,char **argv,int argc)
+{
+	ether_t ether;
+	if (argc<1) {
+		ui_send(fd,"-ERR Too few arguments\r\n");
+	}
+	if( 0 > ether.parse(argv[1]) ) {
+		ui_send(fd,"-ERR MAC address does not grok\r\n");
+	}
+	rem_ip(ether);
+	ui_send(fd,"-OK deleted\r\n");
+	return;
+}
+
+/* GETMAC */
+static void m_getmac(int fd,char **argv,int argc)
+{
+	char tbuff[80];
+	sprintf(tbuff,"+GETMAC %s\r\n", macaddr);
+	ui_send(fd, tbuff);
+	ui_send(fd, "-OK\r\n");
+}
+
+/* LIST */
+static void m_list(int fd,char **argv,int argc)
+{
+	char tbuff[80];
+	ui_send(fd,"+LIST ethernet\tip\r\n");
+	for (online_t::const_iterator i=online.begin();
+	     i!=online.end();
+	     i++) 
+	{
+		struct sockaddr_in sockaddr;
+		sockaddr.sin_addr.s_addr=i->second;
+		sprintf(tbuff,"+LIST %s\t%s\r\n",
+			i->first(),
+			inet_ntoa(sockaddr.sin_addr));
+		ui_send(fd,tbuff);
+	}
+	ui_send(fd,"-OK\r\n");
+	return;
+}
+
+static void m_version(int fd,char **argv,int argc)
+{
+	ui_send(fd,"-ERR Not Supported\r\n");
+	return;
+}
+
+struct functable_entry_t {
+	char *name;
+	void (*func)(int fd,char **,int);
+}; 
+
+static struct functable_entry_t functable[] = {
+	{ "ADD", m_add },
+	{ "DEL", m_del },
+	{ "GETMAC", m_getmac },
+	{ "LIST", m_list },
+	{ "VERSION", m_version },
+	{ NULL, NULL }
+};
+
+/* Parses a line */
+static int parse(char *line,char **argv,int argc)
+{
+	int arg=0;
+	argv[0] = line;
+	while (*line && arg<argc) {
+		if (*line == ' ') {
+			*line='\0';
+			arg++;
+			argv[arg] = line;
+		}
+		line++;
+	}
+	return arg;
+}
+
+#define MAX_ARGS 5
 void ui_process_callback(int fd)
 {
 	char buffer[1024];
 	int len;
+	char *argv[MAX_ARGS];
+	functable_entry_t *functable_iter;
+
 	len=read(fd,buffer,sizeof(buffer));
 	if( len < 0 ) {
 		logger(MOD_IPC, 5, "Read error in callback: %s\n",
@@ -39,105 +149,17 @@ void ui_process_callback(int fd)
 		return;
 	}
 	*(buffer+len)='\0';
-	char *arg=buffer;
-	while( *arg && !isspace( *arg ) )
-		arg++;
-	while( *arg && isspace( *arg ) ) {
-		*arg='\0';
-		arg++;
-	}
 
-	if( arg >= (buffer+len)) 
-		logger(MOD_IPC, 15, "GOT HERE! arg: past EOS buf: \"%s\"\n", 
-				buffer);
-	else
-		logger(MOD_IPC, 15, "GOT HERE! arg: \"%s\" buf: \"%s\"\n", 
-				arg, buffer);
+	int argc=parse(buffer,argv,MAX_ARGS);
 
-
-	/* "ADD 00:01:02:03:04:05 1.2.3.4" */
-	if (strcasecmp("add",buffer) == 0) {
-		if (!arg) {
-			ui_send(fd,"-ERR Missing parameter 'mac'\r\n");
+	functable_iter = functable;
+	while (functable->name) {
+		if (strcasecmp(functable->name,argv[0]) == 0) {
+			functable->func(fd,argv,argc);
 			return;
 		}
-		char *arg2;
-		arg2=arg;
-		while (*arg2 && *arg2 != ' ')
-			arg2++;
-		if (*arg2 == '\0') {
-			ui_send(fd,"-ERR Missing parameter 'ip'\r\n");
-			return;
-		}
-		*arg2='\0';
-		arg2++;
-		ether_t ether;
-		if( 0 > ether.parse(arg) ) {
-			ui_send(fd,"-ERR MAC address does not grok\r\n");
-		}
-		ip_t ip;
-		if ((signed int)(ip=inet_addr(arg2))==-1) {
-			ui_send(fd,"-ERR IP address does not grok\r\n");
-			return;
-		}
-		if( add_ip(ether,ip) ) {
-		  ui_send(fd,"-OK updated\r\n");
-		} else {
-		  ui_send(fd,"-OK no change\r\n");
-		}
-		return;
 	}
-
-	/* "DEL 00:01:02:03:04:05" */
-	else if (strcasecmp("del",buffer) == 0) {
-		ether_t ether;
-		if( 0 > ether.parse(arg) ) {
-			ui_send(fd,"-ERR MAC address does not grok\r\n");
-		}
-		rem_ip(ether);
-		ui_send(fd,"-OK deleted\r\n");
-		return;
-	}
-
-	/* "GETMAC" */
-	else if (strcasecmp("getmac",buffer) ==0) {
-		char tbuff[80];
-		sprintf(tbuff,"+GETMAC %s\r\n", macaddr);
-		ui_send(fd, tbuff);
-		ui_send(fd, "-OK\r\n");
-	}
-
-	/* "LIST" */
-	else if (strcasecmp("list",buffer) == 0) {
-		char tbuff[80];
-		ui_send(fd,"+LIST ethernet\tip\r\n");
-		for (online_t::const_iterator i=online.begin();
-		     i!=online.end();
-		     i++) 
-		{
-			struct sockaddr_in sockaddr;
-			sockaddr.sin_addr.s_addr=i->second;
-			sprintf(tbuff,"+LIST %s\t%s\r\n",
-				i->first(),
-				inet_ntoa(sockaddr.sin_addr));
-			ui_send(fd,tbuff);
-		}
-		ui_send(fd,"-OK\r\n");
-		return;
-	}
-	
-	/* "VERSION" (Not Yet Implemented) */
-	else if (strcasecmp("version",buffer) == 0) {
-		ui_send(fd,"-ERR Not Supported\r\n");
-		return;
-	}
-
-	/* Non blank line - complain */
-	else if (strcasecmp("",buffer)!=0) {
-		ui_send(fd,"-ERR Invalid or unsupported command\r\n");
-		return;
-	}
-
+	ui_send(fd,"-ERR Unknown command\r\n");
 	return;
 }
 
