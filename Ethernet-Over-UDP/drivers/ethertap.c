@@ -79,6 +79,7 @@ static int ethertap_setup(char *req_name)
 	
 	if(fd < 0){
 		logger(MOD_DRIVERS, 1, "Can't open ethertap device, aborting.\n");
+		logger(MOD_DRIVERS, 1, "does /dev/tap* exist? is netlink_dev and ethertap modules loaded?\n"):
 		return -1;
 	}
 

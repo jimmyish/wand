@@ -62,6 +62,9 @@ static int tuntap_setup(char *req_name) {
 		
 		logger(MOD_DRIVERS, 7, "Interface is: %s\n", ifr.ifr_name); 
 		return fd;
+	} else {
+		logger(MOD_DRIVERS, 6, "/dev/net/tun could not be opened, does the file exist, and is tuntap support\n");
+		logger(MOD_DRIVERS, 6, "included in the kernel?\n");
 	}
 	return 0;
 }
@@ -132,10 +135,3 @@ static struct interface_t tuntap = {
 void _init(void) {
         register_device(&tuntap);
 }
-        
-
-
-
-
-
-
