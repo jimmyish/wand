@@ -352,7 +352,7 @@ int main(int argc,char **argv)
 	resp = askEtud("GETPORT", control_file_path);
 	
 	if( resp->status == OKAY) {
-		our_etud_port = atoi(resp->data[0]);
+		our_etud_port = atoi(resp->data[0]+8);
 	}
 
 	else {
