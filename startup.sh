@@ -6,10 +6,12 @@
 #
 #
 
-if [ -f wand.$(hostname -s).conf ]; then
-	. wand.$(hostname -s).conf
-elif [ -f wand.conf ]; then
-	. wand.conf
+CONF=/usr/local/etc
+
+if [ -f $(CONF)/wand.$(hostname -s).conf ]; then
+	. $(CONF)/wand.$(hostname -s).conf
+elif [ -f $(CONF)/wand.conf ]; then
+	. $(CONFI)/wand.conf
 else
 	echo Could not find configuration file
 	exit
@@ -64,7 +66,7 @@ fi
 
 # Start up the tunnel.  
 echo " * Starting Ethernet over IP driver"
-Ethernet-Over-UDP/Etud
+/usr/local/sbin/Etud
 
 echo " * Configuring link layer."
 $IP link set $INTERFACE \
@@ -82,7 +84,7 @@ $IP addr add $IFADDR/$BITLENGTH broadcast $BROADCAST dev $INTERFACE
 echo -n " * Starting wand"
 for i in $SERVERS; do
 	echo " ${i}"
-	./wand/wand $i $ETHERNET
+	/usr/local/sbin/wand $i $ETHERNET
 done
 echo
 
