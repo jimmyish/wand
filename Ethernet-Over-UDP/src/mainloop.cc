@@ -101,7 +101,6 @@ void mainloop(void)
 	       i++) {
 	    
 	    if (FD_ISSET(i->first,&rfd2)) {
-				printf("Descriptor %u is set...\n", i->first);
 	      i->second(i->first);
 	    }
 	    if (endloop) {
