@@ -27,7 +27,7 @@
 /* "ADD mac ip [port]" */
 static void m_add(int fd,char **argv,int argc)
 {
-	if (argc<3) {
+	if (argc<2) {
 		ui_send(fd,"-ERR Not enough parameters\r\n");
 		return;
 	}
@@ -152,10 +152,10 @@ void ui_process_callback(int fd)
 
 	int argc=parse(buffer,argv,MAX_ARGS);
 
-	functable_iter = functable;
-	while (functable->name) {
-		if (strcasecmp(functable->name,argv[0]) == 0) {
-			functable->func(fd,argv,argc);
+	
+	for (functable_iter = functable;functable_iter->name;functable_iter++) {
+		if (strcasecmp(functable_iter->name,argv[0]) == 0) {
+			functable_iter->func(fd,argv,argc);
 			return;
 		}
 	}
