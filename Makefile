@@ -28,7 +28,7 @@ install: all
 	@echo -n Installing wand_startup.sh...
 	@install -D --group=root --mode=555 --owner=root \
 		startup.sh \
-		/usr/local/lib/sbin/wand_startup.sh && echo Done
+		/usr/local/sbin/wand_startup.sh && echo Done
 	@echo -n Installing wand...
 	@install -D --group=root --mode=555 --owner=root \
 		wand/wand \
