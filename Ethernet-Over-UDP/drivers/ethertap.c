@@ -100,7 +100,7 @@ static int ethertap_setup(char *req_name)
 	}
 
 	logger(MOD_DRIVERS, 15, "Ethertap interface renamed to %s.\n", ifname);
-#endif LINUX
+#endif /*LINUX*/
 	logger(MOD_DRIVERS, 15, "ethertap_setup() completed...\n");
 
 	return fd;
@@ -141,7 +141,7 @@ static int ethertap_down(void)
 			ifname, strerror(errno));
 		return -1;
 	}
-#endif LINUX
+#endif /*LINUX*/
 
 	close(skfd);		
 	if (fd >= 0) 
