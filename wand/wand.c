@@ -86,31 +86,36 @@ struct node_t {
  */
 void addEntry(char *mac,char *ip)
 {
-	struct node_t *tmp = root;
-	if (!root) {
-		tmp = (struct node_t*)malloc(sizeof(struct node_t));
-		root = tmp;
-	}
-	else {
-		while (tmp) {
-			if (strcasecmp(mac,tmp->mac)==0) {
-				if (strcmp(ip,tmp->ip)!=0) {
-					free(tmp->ip);
-					tmp->ip=strdup(ip);
-				}
-				tmp->flag=0;
-				return;
+	struct node_t *curr = root;
+	struct node_t *prev = NULL;
+
+	while (curr) {
+		if (strcasecmp(mac,curr->mac)==0) {
+			if (strcmp(ip,curr->ip)!=0) {
+				free(curr->ip);
+				curr->ip=strdup(ip);
 			}
-			tmp=tmp->next;
+			curr->flag=0;
+			return;
 		}
-		tmp->next = (struct node_t*)malloc(sizeof(struct node_t));
-		tmp=tmp->next;
+		prev = curr;	
+		curr = curr->next;
 	}
+	
+	if(prev == NULL){
+		assert(root == NULL);
+		root = (struct node_t*)malloc(sizeof(struct node_t));
+		curr = root;
+	} else {
+		prev->next = (struct node_t*)malloc(sizeof(struct node_t));
+		curr = prev->next;
+	}
+	
 	// syslog("Adding %s (%i)",mac,ip)
-	tmp->mac = strdup(mac);
-	tmp->ip = strdup(ip);
-	tmp->flag = 0;
-	tmp->next = NULL;
+	curr->mac = strdup(mac);
+	curr->ip = strdup(ip);
+	curr->flag = 0;
+	curr->next = NULL;
 }
 
 /*
